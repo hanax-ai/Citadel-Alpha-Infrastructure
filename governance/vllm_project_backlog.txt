@@ -1,0 +1,36 @@
+# 📌 vLLM Project Backlog
+
+This backlog captures deferred or unprioritized items discovered throughout the vLLM installation and model deployment effort. Items listed here are not in the current execution scope but are important to future phases, infrastructure alignment, or external team dependencies.
+
+---
+
+## 🧭 Purpose
+- Track unresolved or unassigned items
+- Ensure visibility of items that may require future planning or resourcing
+- Support sprint planning, dependency mapping, and prioritization discussions
+
+---
+
+## 📝 Backlog Entries
+
+| Backlog ID | Category     | Description | Source | Dependency | Priority | Suggested Phase | Notes |
+|------------|--------------|-------------|--------|------------|----------|------------------|-------|
+| BLG-001    | Infrastructure | Install and configure Grafana Web UI on Dev-Ops server | Scope 0 | DevOps Team | Medium | Phase 2 | Required for metrics observability |
+|            |              |             |        |            |          |                  |       |
+
+---
+
+## 📘 Categories
+- **Infrastructure** – System-level support, e.g., external services, logging, backups
+- **Functional Gap** – Missing capabilities, config extensions
+- **Cross-team Dependency** – Tasks owned by external stakeholders (DevOps, Security, etc.)
+- **Technical Debt** – Known refactors or cleanup
+
+## 📌 Guidelines
+- Only items out-of-scope or currently unassigned should be added here
+- Backlog entries may be promoted to the Task List (`TL-001`) when prioritized
+- Consider linking backlog items to the PRD, status tracker, or defect log where applicable
+
+---
+
+_Last reviewed: [Insert Date]_
