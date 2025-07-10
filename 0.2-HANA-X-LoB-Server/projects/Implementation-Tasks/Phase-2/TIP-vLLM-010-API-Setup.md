@@ -12,7 +12,7 @@
 
 ## 🎯 Objective
 
-Configure vLLM for OpenAI-compatible API serving on both servers with port differentiation and proper endpoint structure.
+Configure vLLM for OpenAI-compatible API serving on hx-llm-server-02 (192.168.10.28) with development-focused features to support LoB models: Nous-Hermes-2-Mixtral-8x7B-DPO, Phi-3-mini-4k-instruct, Qwen-Coder-DeepSeek-R1-14B, and imp-v1-3b.
 
 ---
 
@@ -36,9 +36,9 @@ Configure vLLM for OpenAI-compatible API serving on both servers with port diffe
 ### Step 1: Port Configuration Planning
 **Duration:** 5 minutes
 
-**Server Port Assignments:**
-- **hx-llm-server-01** (192.168.10.29): Port 8000 (Primary)
-- **hx-llm-server-02** (192.168.10.28): Port 8001 (Secondary)
+**LoB Server Port Assignment:**
+- **hx-llm-server-02** (192.168.10.28): Port 8001 (Development/LoB Server)
+- **Development-focused API endpoints** for code completion and technical assistance
 
 **API Endpoint Structure:**
 ```
@@ -63,23 +63,44 @@ Develop start/stop scripts for API servers with proper parameter handling.
 
 ## 🔧 Configuration Files
 
-### Primary Server API Configuration
-**File:** `/opt/citadel/configs/api_server_01.json`
+### LoB Development Server API Configuration
+**File:** `/opt/citadel/configs/api_server_lob.json`
 
 ```json
 {
   "server": {
     "host": "0.0.0.0",
-    "port": 8000,
-    "server_id": "hx-llm-server-01",
-    "description": "Primary LLM Inference Server"
+    "port": 8001,
+    "server_id": "hx-llm-server-02",
+    "description": "LoB Development LLM Inference Server",
+    "role": "development-coding-assistance"
+  },
+  "supported_models": {
+    "primary_models": [
+      "NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO",
+      "microsoft/Phi-3-mini-4k-instruct",
+      "deepseek-ai/Qwen-Coder-DeepSeek-R1-14B",
+      "microsoft/imp-v1-3b"
+    ],
+    "default_model": "NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO"
   },
   "openai_api": {
     "enabled": true,
     "chat_template": null,
     "response_role": "assistant",
     "enable_auto_completion": true,
-    "enable_chat_completion": true
+    "enable_chat_completion": true,
+    "enable_code_completion": true,
+    "enable_function_calling": true
+  },
+  "development_features": {
+    "code_analysis": true,
+    "syntax_highlighting": true,
+    "multi_language_support": [
+      "python", "javascript", "typescript", "java", "c++", "go", "rust"
+    ],
+    "debugging_assistance": true,
+    "documentation_generation": true
   },
   "engine": {
     "model": null,
@@ -109,8 +130,8 @@ Develop start/stop scripts for API servers with proper parameter handling.
   },
   "logging": {
     "log_level": "INFO",
-    "access_log": "/opt/citadel/logs/api_access_01.log",
-    "error_log": "/opt/citadel/logs/api_error_01.log"
+    "access_log": "/opt/citadel/logs/api_access_lob.log",
+    "error_log": "/opt/citadel/logs/api_error_lob.log"
   },
   "performance": {
     "uvicorn_log_level": "info",

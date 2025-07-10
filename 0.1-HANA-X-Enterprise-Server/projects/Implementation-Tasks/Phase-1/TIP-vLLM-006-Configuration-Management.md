@@ -1,9 +1,10 @@
 # 🔧 Task 1.1: Configuration Management System Deployment
 
-**Objective**: Deploy Pydantic-based configuration management system  
+**Objective**: Deploy Pydantic-based configuration for enterprise model management  
 **Duration**: 45 minutes  
 **Dependencies**: Phase 0 Complete (Tasks 0.1-0.5)  
-**Success Criteria**: Configuration system functional, settings validated, environment variables managed
+**Related Models**: DeepSeek-R1-Distill-Qwen-32B, Mixtral-8x7B-Instruct-v0.1, Yi-34B-Chat, openchat-3.5-0106  
+**Success Criteria**: Configuration system for enterprise models functional, settings validated, environment variables managed
 
 ## Prerequisites
 - [ ] Phase 0 tasks completed successfully (Infrastructure validated)
@@ -162,9 +163,18 @@ from base_settings import BaseConfig, NetworkConfig, StorageConfig
 class vLLMConfig(BaseSettings):
     """vLLM engine configuration"""
     
-    # Model settings
-    default_model: str = Field(default="facebook/opt-125m", description="Default model to load")
-    model_cache_dir: Path = Field(default=Path("/mnt/citadel-models/cache"), description="Model cache directory")
+    # Enterprise Model settings
+    default_model: str = Field(default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B", description="Default enterprise model to load")
+    model_cache_dir: Path = Field(default=Path("/mnt/citadel-models/cache"), description="Enterprise model cache directory")
+    enterprise_models: List[str] = Field(
+        default=[
+            "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+            "mistralai/Mixtral-8x7B-Instruct-v0.1", 
+            "01-ai/Yi-34B-Chat",
+            "openchat/openchat-3.5-0106"
+        ],
+        description="List of enterprise models for deployment"
+    )
     
     # Engine settings
     tensor_parallel_size: int = Field(default=1, description="Tensor parallel size")
@@ -227,7 +237,7 @@ class CitadelSettings(BaseConfig):
     monitoring: MonitoringConfig = MonitoringConfig()
     
     def get_vllm_args(self) -> Dict[str, any]:
-        """Generate vLLM command line arguments"""
+        """Generate vLLM command line arguments for enterprise models"""
         args = {
             "model": self.vllm.default_model,
             "host": self.network.host_ip,
@@ -235,15 +245,52 @@ class CitadelSettings(BaseConfig):
             "tensor-parallel-size": self.vllm.tensor_parallel_size,
             "gpu-memory-utilization": self.vllm.gpu_memory_utilization,
             "swap-space": self.vllm.swap_space,
+            "worker-use-ray": True,  # Required for enterprise models
+            "trust-remote-code": False,  # Security for enterprise
+            "download-dir": str(self.storage.model_storage),
         }
         
+        # Enterprise model optimizations
         if self.vllm.max_model_len:
             args["max-model-len"] = self.vllm.max_model_len
+        else:
+            # Default for enterprise models
+            args["max-model-len"] = 32768
             
         if self.vllm.served_model_name:
             args["served-model-name"] = self.vllm.served_model_name
             
         return args
+    
+    def get_enterprise_model_config(self, model_name: str) -> Dict[str, any]:
+        """Get configuration for specific enterprise model"""
+        enterprise_configs = {
+            "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B": {
+                "tensor_parallel_size": 2,
+                "max_model_len": 32768,
+                "gpu_memory_utilization": 0.9,
+                "use_case": "business-critical"
+            },
+            "mistralai/Mixtral-8x7B-Instruct-v0.1": {
+                "tensor_parallel_size": 2,
+                "max_model_len": 32768,
+                "gpu_memory_utilization": 0.85,
+                "use_case": "instruction-following"
+            },
+            "01-ai/Yi-34B-Chat": {
+                "tensor_parallel_size": 2,
+                "max_model_len": 4096,
+                "gpu_memory_utilization": 0.9,
+                "use_case": "conversation"
+            },
+            "openchat/openchat-3.5-0106": {
+                "tensor_parallel_size": 1,
+                "max_model_len": 8192,
+                "gpu_memory_utilization": 0.7,
+                "use_case": "customer-service"
+            }
+        }
+        return enterprise_configs.get(model_name, {})
     
     def save_config(self, path: Optional[Path] = None) -> Path:
         """Save configuration to YAML file"""
@@ -309,12 +356,14 @@ STORAGE_TEMP_STORAGE=/opt/citadel/tmp
 STORAGE_MODEL_STORAGE_LIMIT_GB=2000
 STORAGE_BACKUP_STORAGE_LIMIT_GB=5000
 
-# vLLM Configuration
-VLLM_DEFAULT_MODEL=facebook/opt-125m
-VLLM_TENSOR_PARALLEL_SIZE=1
+# vLLM Configuration for Enterprise Models
+VLLM_DEFAULT_MODEL=deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
+VLLM_TENSOR_PARALLEL_SIZE=2
 VLLM_GPU_MEMORY_UTILIZATION=0.9
 VLLM_SWAP_SPACE=4
 VLLM_CPU_OFFLOAD_GB=0
+VLLM_ENTERPRISE_MODELS="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B,mistralai/Mixtral-8x7B-Instruct-v0.1,01-ai/Yi-34B-Chat,openchat/openchat-3.5-0106"
+VLLM_MAX_MODEL_LEN=32768
 
 # Hugging Face Configuration
 # HF_TOKEN=your_hugging_face_token_here

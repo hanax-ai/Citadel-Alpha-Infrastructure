@@ -12,7 +12,13 @@
 
 ## 🎯 Objective
 
-Install latest stable vLLM version with all required dependencies on both hx-llm-server-01 (192.168.10.29) and hx-llm-server-02 (192.168.10.28).
+Install latest stable vLLM version optimized for enterprise models on both hx-llm-server-01 (192.168.10.29) and hx-llm-server-02 (192.168.10.28).
+
+**Target Enterprise Models:**
+- **DeepSeek-R1-Distill-Qwen-32B**: Primary enterprise model requiring optimized vLLM installation
+- **Mixtral-8x7B-Instruct-v0.1**: Enterprise instruction model
+- **Yi-34B-Chat**: Large parameter enterprise conversation model
+- **openchat-3.5-0106**: Customer service optimization model
 
 ---
 
@@ -68,12 +74,12 @@ pip show vllm
 # pip install -e .
 ```
 
-**Key Components Installed:**
-- vLLM core engine
-- Ray backend for distributed inference
-- FastAPI integration for API serving
-- Transformers integration
-- Required CUDA libraries
+**Key Components Installed for Enterprise Models:**
+- vLLM core engine optimized for enterprise workloads
+- Ray backend for distributed inference (supports DeepSeek-R1-Distill-Qwen-32B)
+- FastAPI integration for API serving (enterprise-grade)
+- Transformers integration (supports Yi-34B-Chat, Mixtral-8x7B-Instruct-v0.1)
+- Required CUDA libraries for enterprise model acceleration
 
 ### Step 3: Dependency Resolution
 **Duration:** 5 minutes

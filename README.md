@@ -23,28 +23,26 @@ This repository contains the comprehensive infrastructure setup framework for th
 
 ```
 Citadel-Alpha-Infrastructure/
-├── governance/                 # Comprehensive governance framework
-│   ├── README.md              # Governance documentation overview
-│   ├── AI_Operating_Rules_HanaX.md
-│   ├── OOP_Coding_Standards_&_Rules.md
-│   ├── task_creation_guidelines.txt
-│   ├── vllm_test_guidelines.md
-│   ├── prd_vllm_model_install.txt
-│   ├── Traceability Matrix – vLLM Installation Project.txt
-│   ├── vllm_installation_status.txt
-│   ├── vllm_defect_tracker.txt
-│   ├── vllm_project_backlog.txt
-│   ├── vllm_project_doc_overview.txt
-│   └── mermaid-ai-diagram-2025-07-03-222842.png
-├── examples/                   # Example templates and documentation
-├── Hana-X-Chat-Server/        # Chat server project structure
-├── Hana-X-Coding-Server/      # Coding server project structure
-├── hana-x-shared-library/     # Shared library project structure
-├── projects/                  # Project tracking and documentation
-├── AI_Operating_Rules_HanaX.md # Core AI operating rules (v1.5)
-├── KDD.md                     # Key Decisions Document
-├── hana-x-shared-library.md   # Shared library documentation
-└── README.md                  # This file
+├── 0.0-HANA-X-Governance/         # Governance framework
+│   ├── examples/                 # Governance examples
+│   ├── references/               # Governance references
+├── 0.1-HANA-X-Enterprise-Server/  # Enterprise server projects
+│   ├── config/                   # Configuration files
+│   ├── projects/                 # Server-specific projects
+│   ├── scripts/                  # Deployment scripts
+│   ├── src/                      # Source code
+│   └── tests/                    # Testing modules
+├── 0.2-HANA-X-LoB-Server/         # Line of Business server projects
+│   ├── config/
+│   ├── projects/
+│   ├── scripts/
+│   ├── src/
+│   └── tests/
+├── 0.11-HANA-X-Shared-Library/    # Shared code library
+│   ├── src/                      # Shared modules
+│   ├── tests/                    # Shared test cases
+├── 0.12-X-Archive/                # Archived projects and files
+└── 0.13-HANA-X-Program/           # Program-level orchestration
 ```
 
 ## Key Features
@@ -77,20 +75,25 @@ Citadel-Alpha-Infrastructure/
 ### 1. Review Governance Framework
 Start by reviewing the comprehensive governance documentation:
 ```bash
-cd governance/
+cd 0.0-HANA-X-Governance/
 cat README.md
 ```
 
-### 2. Understand Key Decisions
-Review the architectural decisions and principles:
+### 2. Understand Project Structure
+Explore the server-specific projects:
 ```bash
-cat KDD.md
+# Enterprise server (hx-llm-server-01)
+ls -la 0.1-HANA-X-Enterprise-Server/projects/
+
+# Line of Business server (hx-llm-server-02)
+ls -la 0.2-HANA-X-LoB-Server/projects/
 ```
 
-### 3. Follow AI Operating Rules
-All activities must comply with:
+### 3. Check Shared Libraries
+Review common utilities and modules:
 ```bash
-cat AI_Operating_Rules_HanaX.md
+cd 0.11-HANA-X-Shared-Library/
+cat hana-x-shared-library.md
 ```
 
 ## Infrastructure Setup Process
@@ -135,10 +138,10 @@ All activities must comply with:
 
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [Governance README](governance/README.md) | Complete governance overview | ✅ Ready |
-| [KDD.md](KDD.md) | Key architectural decisions | ✅ Updated |
-| [Shared Library](hana-x-shared-library.md) | Code reuse documentation | ✅ Enhanced |
-| [AI Operating Rules](AI_Operating_Rules_HanaX.md) | Core operating principles | ✅ v1.5 |
+| [Governance README](0.0-HANA-X-Governance/README.md) | Complete governance overview | ✅ Ready |
+|| [Enterprise Server](0.1-HANA-X-Enterprise-Server/projects/) | Primary server deployment | 🔧 In Progress |
+|| [LoB Server](0.2-HANA-X-LoB-Server/projects/) | Secondary server deployment | ⏳ Pending |
+|| [Shared Library](0.11-HANA-X-Shared-Library/hana-x-shared-library.md) | Code reuse documentation | 🔄 Expanding |
 
 ## Next Steps
 

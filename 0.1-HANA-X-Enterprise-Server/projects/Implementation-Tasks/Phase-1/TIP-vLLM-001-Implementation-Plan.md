@@ -16,8 +16,14 @@
 This Task Implementation Plan provides detailed, executable instructions for the dual vLLM server deployment. Each task includes specific commands, validation procedures, and error handling steps following SMART+ST principles.
 
 **Target Infrastructure:**
-- **hx-llm-server-01** (192.168.10.29): Primary LLM inference server
+- **hx-llm-server-01** (192.168.10.29): Enterprise LLM inference server
 - **hx-llm-server-02** (192.168.10.28): Secondary LLM inference server
+
+**Target Enterprise Models:**
+- **DeepSeek-R1-Distill-Qwen-32B**: Primary enterprise model for business-critical applications
+- **Mixtral-8x7B-Instruct-v0.1**: Enterprise model for instruction-following tasks
+- **Yi-34B-Chat**: Advanced enterprise conversation model
+- **openchat-3.5-0106**: Enterprise customer service optimization model
 
 ---
 

@@ -16,9 +16,9 @@ This task list details the development-focused deployment and operations for **h
 
 **Server Specialization:**
 - **Primary Role**: Development and coding assistance
-- **Target Models**: DeepSeek-Coder-14B-Instruct, CodeLlama-13B-Instruct, Phi-3-Medium-128K-Instruct
-- **Performance Targets**: <2s latency, >15 RPS throughput, 99.5% availability
-- **Development Focus**: Code completion, debugging, documentation, technical Q&A
+- **Target Models**: Nous-Hermes-2-Mixtral-8x7B-DPO, Phi-3-mini-4k-instruct, Qwen-Coder-DeepSeek-R1-14B, imp-v1-3b
+- **Performance Targets**: \u003c2s latency, \u003e15 RPS throughput, 99.5% availability
+- **Development Focus**: Code completion, debugging, documentation, technical Q\u0026A
 
 ---
 
@@ -314,62 +314,74 @@ This task list details the development-focused deployment and operations for **h
 - **Validation**: Development HF integration tests pass
 - **Status**: ❌ Not Started
 
-### Task 3.3: DeepSeek-Coder Development Deployment
-- **Objective**: Deploy primary coding model DeepSeek-Coder-14B-Instruct
+### Task 3.3: Nous-Hermes-2-Mixtral-8x7B-DPO Development Deployment
+- **Objective**: Deploy primary coding model Nous-Hermes-2-Mixtral-8x7B-DPO
 - **Success Criteria**:
-  - DeepSeek-Coder model downloaded and validated
+  - Nous-Hermes-2-Mixtral-8x7B-DPO model downloaded and validated
   - Code generation optimization applied
   - Multi-language coding support verified
   - Development performance benchmarks met
 - **Dependencies**: Task 3.2
-- **Estimated Duration**: 90 minutes
-- **Validation**: DeepSeek-Coder deployment tests pass
+- **Estimated Duration**: 120 minutes
+- **Validation**: Nous-Hermes-2-Mixtral-8x7B-DPO deployment tests pass
 - **Status**: ❌ Not Started
 
-### Task 3.4: CodeLlama Development Deployment
-- **Objective**: Deploy CodeLlama-13B-Instruct for code instruction
+### Task 3.4: Phi-3-mini-4k-instruct Development Deployment
+- **Objective**: Deploy Phi-3-mini-4k-instruct for lightweight code assistance
 - **Success Criteria**:
-  - CodeLlama model downloaded and validated
+  - Phi-3-mini-4k-instruct model downloaded and validated
   - Code instruction optimization applied
   - Programming language specialization configured
   - Development debugging support enabled
 - **Dependencies**: Task 3.3
-- **Estimated Duration**: 80 minutes
-- **Validation**: CodeLlama deployment tests pass
-- **Status**: ❌ Not Started
-
-### Task 3.5: Phi-3-Medium Development Deployment
-- **Objective**: Deploy Phi-3-Medium-128K-Instruct for technical Q&A
-- **Success Criteria**:
-  - Phi-3-Medium model downloaded and validated
-  - Technical documentation optimization
-  - Long context development support
-  - Q&A and explanation capabilities tested
-- **Dependencies**: Task 3.4
 - **Estimated Duration**: 70 minutes
-- **Validation**: Phi-3-Medium deployment tests pass
+- **Validation**: Phi-3-mini-4k-instruct deployment tests pass
 - **Status**: ❌ Not Started
 
-### Task 3.6: Development Model Validation
+### Task 3.5: Qwen-Coder-DeepSeek-R1-14B Development Deployment
+- **Objective**: Deploy Qwen-Coder-DeepSeek-R1-14B for advanced coding
+- **Success Criteria**:
+  - Qwen-Coder-DeepSeek-R1-14B model downloaded and validated
+  - Advanced coding optimization applied
+  - Long context development support
+  - Q\u0026A and explanation capabilities tested
+- **Dependencies**: Task 3.4
+- **Estimated Duration**: 90 minutes
+- **Validation**: Qwen-Coder-DeepSeek-R1-14B deployment tests pass
+- **Status**: ❌ Not Started
+
+### Task 3.6: imp-v1-3b Development Deployment
+- **Objective**: Deploy imp-v1-3b for lightweight development tasks
+- **Success Criteria**:
+  - imp-v1-3b model downloaded and validated
+  - Lightweight development optimization
+  - Resource-efficient inference configuration
+  - Development task specialization testing
+- **Dependencies**: Task 3.5
+- **Estimated Duration**: 60 minutes
+- **Validation**: imp-v1-3b deployment tests pass
+- **Status**: ❌ Not Started
+
+### Task 3.7: Development Model Validation
 - **Objective**: Comprehensive development model validation
 - **Success Criteria**:
   - All development models functional
   - Code generation quality verified
   - Multi-language support confirmed
   - Development workflow integration tested
-- **Dependencies**: Tasks 3.3-3.5
+- **Dependencies**: Tasks 3.3-3.6
 - **Estimated Duration**: 45 minutes
 - **Validation**: Development model validation suite passes
 - **Status**: ❌ Not Started
 
-### Task 3.7: Development Model Optimization
+### Task 3.8: Development Model Optimization
 - **Objective**: Final development model optimization
 - **Success Criteria**:
   - Code-specific optimizations applied
   - Development resource allocation optimized
   - Multi-language model performance tuned
   - Development SLA requirements met
-- **Dependencies**: Task 3.6
+- **Dependencies**: Task 3.7
 - **Estimated Duration**: 55 minutes
 - **Validation**: Development optimization tests pass
 - **Status**: ❌ Not Started

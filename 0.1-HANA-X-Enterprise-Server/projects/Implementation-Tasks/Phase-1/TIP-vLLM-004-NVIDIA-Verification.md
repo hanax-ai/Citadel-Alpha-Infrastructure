@@ -1,9 +1,10 @@
 # 🔧 Task 0.4: NVIDIA Driver Verification
 
-**Objective**: Verify NVIDIA drivers (570.x series) are installed and functional  
+**Objective**: Verify NVIDIA drivers for enterprise model GPU acceleration  
 **Duration**: 15 minutes  
 **Dependencies**: Task 0.3 (Operating System Validation)  
-**Success Criteria**: nvidia-smi functional, GPU detection accurate, CUDA runtime accessible
+**Related Models**: DeepSeek-R1-Distill-Qwen-32B, Mixtral-8x7B-Instruct-v0.1, Yi-34B-Chat, openchat-3.5-0106  
+**Success Criteria**: nvidia-smi functional, GPU detection for enterprise models, CUDA runtime accessible
 
 ## Prerequisites
 - [ ] Task 0.3 completed successfully (OS validated)
@@ -44,12 +45,13 @@ fi
 # Check GPU models
 ssh agent0@192.168.10.29 'nvidia-smi -L'
 
-# Check total VRAM
+# Check total VRAM for enterprise models
+# DeepSeek-R1-Distill-Qwen-32B and Yi-34B-Chat require substantial VRAM
 TOTAL_VRAM=$(ssh agent0@192.168.10.29 'nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | awk "{sum+=\$1} END {print sum}"')
 if [ "$TOTAL_VRAM" -ge 30000 ]; then
-    echo "✅ Total VRAM: PASS (${TOTAL_VRAM}MB ≥ 30GB)"
+    echo "✅ Total VRAM: PASS (${TOTAL_VRAM}MB ≥ 30GB for enterprise models)"
 else
-    echo "❌ Total VRAM: FAIL (${TOTAL_VRAM}MB < 30GB)"
+    echo "❌ Total VRAM: FAIL (${TOTAL_VRAM}MB < 30GB required for enterprise models)"
 fi
 ```
 

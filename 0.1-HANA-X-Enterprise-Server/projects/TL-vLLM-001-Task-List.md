@@ -16,7 +16,7 @@ This task list details the enterprise-focused deployment and operations for **hx
 
 **Server Specialization:**
 - **Primary Role**: Enterprise business applications
-- **Target Models**: Mixtral-8x7B-Instruct, Yi-34B-Chat, Qwen2.5-72B-Instruct
+- **Target Models**: DeepSeek-R1-Distill-Qwen-32B, Mixtral-8x7B-Instruct-v0.1, Yi-34B-Chat, openchat-3.5-0106
 - **Performance Targets**: <1.5s latency, >20 RPS throughput, 99.9% availability
 - **Business Focus**: Customer support, content generation, business intelligence
 
@@ -314,62 +314,74 @@ This task list details the enterprise-focused deployment and operations for **hx
 - **Validation**: Enterprise HF integration tests pass
 - **Status**: ❌ Not Started
 
-### Task 3.3: Mixtral-8x7B Enterprise Deployment
-- **Objective**: Deploy primary enterprise model Mixtral-8x7B-Instruct
+### Task 3.3: DeepSeek-R1-Distill-Qwen-32B Enterprise Deployment
+- **Objective**: Deploy primary enterprise model DeepSeek-R1-Distill-Qwen-32B
 - **Success Criteria**:
-  - Mixtral-8x7B model downloaded and validated
+  - DeepSeek-R1-Distill-Qwen-32B model downloaded and validated
   - Enterprise model optimization applied
   - Business performance benchmarks met
   - Enterprise inference testing complete
 - **Dependencies**: Task 3.2
-- **Estimated Duration**: 120 minutes
-- **Validation**: Mixtral enterprise deployment tests pass
+- **Estimated Duration**: 110 minutes
+- **Validation**: DeepSeek-R1-Distill-Qwen-32B enterprise deployment tests pass
 - **Status**: ❌ Not Started
 
-### Task 3.4: Yi-34B Enterprise Deployment
-- **Objective**: Deploy Yi-34B-Chat for enterprise applications
+### Task 3.4: Mixtral-8x7B-Instruct-v0.1 Enterprise Deployment
+- **Objective**: Deploy Mixtral-8x7B-Instruct-v0.1 for enterprise applications
 - **Success Criteria**:
-  - Yi-34B model downloaded and validated
-  - Enterprise-specific fine-tuning applied
+  - Mixtral-8x7B-Instruct-v0.1 model downloaded and validated
+  - Enterprise-specific optimization applied
   - Business use case optimization
   - Enterprise compliance validation
 - **Dependencies**: Task 3.3
-- **Estimated Duration**: 100 minutes
-- **Validation**: Yi-34B enterprise deployment tests pass
+- **Estimated Duration**: 120 minutes
+- **Validation**: Mixtral-8x7B-Instruct-v0.1 enterprise deployment tests pass
 - **Status**: ❌ Not Started
 
-### Task 3.5: Qwen2.5-72B Enterprise Deployment
-- **Objective**: Deploy Qwen2.5-72B for advanced enterprise applications
+### Task 3.5: Yi-34B-Chat Enterprise Deployment
+- **Objective**: Deploy Yi-34B-Chat for advanced enterprise applications
 - **Success Criteria**:
-  - Qwen2.5-72B model downloaded and validated
+  - Yi-34B-Chat model downloaded and validated
   - Advanced enterprise optimization
   - High-performance inference configuration
   - Enterprise scalability testing
 - **Dependencies**: Task 3.4
-- **Estimated Duration**: 140 minutes
-- **Validation**: Qwen2.5 enterprise deployment tests pass
+- **Estimated Duration**: 100 minutes
+- **Validation**: Yi-34B-Chat enterprise deployment tests pass
 - **Status**: ❌ Not Started
 
-### Task 3.6: Enterprise Model Validation
+### Task 3.6: openchat-3.5-0106 Enterprise Deployment
+- **Objective**: Deploy openchat-3.5-0106 for enterprise conversation applications
+- **Success Criteria**:
+  - openchat-3.5-0106 model downloaded and validated
+  - Enterprise conversation optimization
+  - Customer service use case optimization
+  - Enterprise interaction testing
+- **Dependencies**: Task 3.5
+- **Estimated Duration**: 85 minutes
+- **Validation**: openchat-3.5-0106 enterprise deployment tests pass
+- **Status**: ❌ Not Started
+
+### Task 3.7: Enterprise Model Validation
 - **Objective**: Comprehensive enterprise model validation
 - **Success Criteria**:
   - All enterprise models functional
   - Business performance requirements met
   - Enterprise compliance verified
   - Model switching and fallback tested
-- **Dependencies**: Tasks 3.3-3.5
+- **Dependencies**: Tasks 3.3-3.6
 - **Estimated Duration**: 50 minutes
 - **Validation**: Enterprise model validation suite passes
 - **Status**: ❌ Not Started
 
-### Task 3.7: Enterprise Model Optimization
+### Task 3.8: Enterprise Model Optimization
 - **Objective**: Final enterprise model optimization
 - **Success Criteria**:
   - Business-specific optimizations applied
   - Enterprise resource allocation optimized
   - Model performance fine-tuned
   - Enterprise SLA requirements met
-- **Dependencies**: Task 3.6
+- **Dependencies**: Task 3.7
 - **Estimated Duration**: 60 minutes
 - **Validation**: Enterprise optimization tests pass
 - **Status**: ❌ Not Started

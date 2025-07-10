@@ -10,46 +10,46 @@
 - [ ] SSH access to both servers with sudo privileges
 - [ ] Python 3.12 environment available
 
-## Step 1: Create Configuration Directory Structure - hx-llm-server-01 (192.168.10.29)
+## Step 1: Create Configuration Directory Structure - hx-llm-server-02 (192.168.10.28)
 ```bash
-echo "🔍 Creating configuration directory structure on hx-llm-server-01..."
+echo "🔍 Creating configuration directory structure on hx-llm-server-02..."
 
 # Create citadel directory structure
-ssh agent0@192.168.10.29 'sudo mkdir -p /opt/citadel/{configs,scripts,logs,tmp}'
+ssh agent0@192.168.10.28 'sudo mkdir -p /opt/citadel/{configs,scripts,logs,tmp}'
 
 # Set proper ownership
-ssh agent0@192.168.10.29 'sudo chown -R agent0:agent0 /opt/citadel'
+ssh agent0@192.168.10.28 'sudo chown -R agent0:agent0 /opt/citadel'
 
 # Set proper permissions
-ssh agent0@192.168.10.29 'chmod 755 /opt/citadel && chmod 755 /opt/citadel/{configs,scripts,logs,tmp}'
+ssh agent0@192.168.10.28 'chmod 755 /opt/citadel && chmod 755 /opt/citadel/{configs,scripts,logs,tmp}'
 
 # Verify directory structure
-ssh agent0@192.168.10.29 'ls -la /opt/citadel/' && echo "✅ Directory Structure: CREATED" || echo "❌ Directory Structure: FAILED"
+ssh agent0@192.168.10.28 'ls -la /opt/citadel/' && echo "✅ Directory Structure: CREATED" || echo "❌ Directory Structure: FAILED"
 
 # Test write access
-ssh agent0@192.168.10.29 'touch /opt/citadel/test.tmp && rm /opt/citadel/test.tmp' && echo "✅ Write Access: PASS" || echo "❌ Write Access: FAIL"
+ssh agent0@192.168.10.28 'touch /opt/citadel/test.tmp && rm /opt/citadel/test.tmp' && echo "✅ Write Access: PASS" || echo "❌ Write Access: FAIL"
 ```
 
-## Step 2: Install Configuration Dependencies - hx-llm-server-01
+## Step 2: Install Configuration Dependencies - hx-llm-server-02
 ```bash
-echo "🔍 Installing configuration management dependencies on hx-llm-server-01..."
+echo "🔍 Installing configuration management dependencies on hx-llm-server-02..."
 
 # Install Pydantic and related packages
-ssh agent0@192.168.10.29 'pip3 install pydantic pydantic-settings python-dotenv PyYAML' && echo "✅ Dependencies: INSTALLED" || echo "❌ Dependencies: FAILED"
+ssh agent0@192.168.10.28 'pip3 install pydantic pydantic-settings python-dotenv PyYAML' && echo "✅ Dependencies: INSTALLED" || echo "❌ Dependencies: FAILED"
 
 # Verify Pydantic installation
-ssh agent0@192.168.10.29 'python3 -c "import pydantic; print(f\"Pydantic version: {pydantic.__version__}\")"' && echo "✅ Pydantic: FUNCTIONAL" || echo "❌ Pydantic: FAILED"
+ssh agent0@192.168.10.28 'python3 -c "import pydantic; print(f\"Pydantic version: {pydantic.__version__}\")"' && echo "✅ Pydantic: FUNCTIONAL" || echo "❌ Pydantic: FAILED"
 
 # Verify other dependencies
-ssh agent0@192.168.10.29 'python3 -c "import yaml, os; print(\"PyYAML and os modules available\")"' && echo "✅ Support Libraries: FUNCTIONAL" || echo "❌ Support Libraries: FAILED"
+ssh agent0@192.168.10.28 'python3 -c "import yaml, os; print(\"PyYAML and os modules available\")"' && echo "✅ Support Libraries: FUNCTIONAL" || echo "❌ Support Libraries: FAILED"
 ```
 
-## Step 3: Create Base Configuration Classes - hx-llm-server-01
+## Step 3: Create Base Configuration Classes - hx-llm-server-02
 ```bash
-echo "🔍 Creating base configuration classes on hx-llm-server-01..."
+echo "🔍 Creating base configuration classes on hx-llm-server-02..."
 
 # Create base settings configuration
-ssh agent0@192.168.10.29 'cat > /opt/citadel/configs/base_settings.py << EOF
+ssh agent0@192.168.10.28 'cat > /opt/citadel/configs/base_settings.py << EOF
 """
 Base configuration settings for Citadel vLLM deployment
 """
@@ -140,15 +140,15 @@ if __name__ == "__main__":
 EOF'
 
 # Test configuration classes
-ssh agent0@192.168.10.29 'cd /opt/citadel/configs && python3 base_settings.py' && echo "✅ Base Configuration: FUNCTIONAL" || echo "❌ Base Configuration: FAILED"
+ssh agent0@192.168.10.28 'cd /opt/citadel/configs && python3 base_settings.py' && echo "✅ Base Configuration: FUNCTIONAL" || echo "❌ Base Configuration: FAILED"
 ```
 
-## Step 4: Create vLLM-Specific Configuration - hx-llm-server-01
+## Step 4: Create vLLM-Specific Configuration - hx-llm-server-02
 ```bash
-echo "🔍 Creating vLLM-specific configuration on hx-llm-server-01..."
+echo "🔍 Creating vLLM-specific configuration on hx-llm-server-02..."
 
 # Create vLLM settings
-ssh agent0@192.168.10.29 'cat > /opt/citadel/configs/vllm_settings.py << EOF
+ssh agent0@192.168.10.28 'cat > /opt/citadel/configs/vllm_settings.py << EOF
 """
 vLLM-specific configuration settings
 """
@@ -163,8 +163,16 @@ class vLLMConfig(BaseSettings):
     """vLLM engine configuration"""
     
     # Model settings
-    default_model: str = Field(default="facebook/opt-125m", description="Default model to load")
+    default_model: str = Field(default="NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO", description="Default model to load")
     model_cache_dir: Path = Field(default=Path("/mnt/citadel-models/cache"), description="Model cache directory")
+    
+    # Recommended models
+    recommended_models: List[str] = Field(default_factory=lambda: [
+        "NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO",
+        "microsoft/Phi-3-mini-4k-instruct",
+        "deepseek-ai/Qwen-Coder-DeepSeek-R1-14B",
+        "microsoft/imp-v1-3b"
+    ], description="Recommended models for this server")
     
     # Engine settings
     tensor_parallel_size: int = Field(default=1, description="Tensor parallel size")
@@ -276,7 +284,7 @@ if __name__ == "__main__":
 EOF'
 
 # Test vLLM configuration
-ssh agent0@192.168.10.29 'cd /opt/citadel/configs && python3 vllm_settings.py' && echo "✅ vLLM Configuration: FUNCTIONAL" || echo "❌ vLLM Configuration: FAILED"
+ssh agent0@192.168.10.28 'cd /opt/citadel/configs && python3 vllm_settings.py' && echo "✅ vLLM Configuration: FUNCTIONAL" || echo "❌ vLLM Configuration: FAILED"
 ```
 
 ## Step 5: Create Environment Configuration Template - hx-llm-server-01
@@ -292,13 +300,13 @@ ssh agent0@192.168.10.29 'cat > /opt/citadel/configs/.env.template << EOF
 ENVIRONMENT=development
 DEBUG=false
 LOG_LEVEL=INFO
-SERVER_NAME=hx-llm-server-01
-SERVER_ROLE=llm-server
+SERVER_NAME=hx-llm-server-02
+SERVER_ROLE=lob-development-server
 
 # Network Configuration
 NETWORK_HOST_IP=0.0.0.0
-NETWORK_API_PORT=8000
-NETWORK_ADMIN_PORT=8001
+NETWORK_API_PORT=8001
+NETWORK_ADMIN_PORT=8002
 NETWORK_LAB_NETWORK=192.168.10.0/24
 NETWORK_GATEWAY_IP=192.168.10.1
 
@@ -310,7 +318,7 @@ STORAGE_MODEL_STORAGE_LIMIT_GB=2000
 STORAGE_BACKUP_STORAGE_LIMIT_GB=5000
 
 # vLLM Configuration
-VLLM_DEFAULT_MODEL=facebook/opt-125m
+VLLM_DEFAULT_MODEL=NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO
 VLLM_TENSOR_PARALLEL_SIZE=1
 VLLM_GPU_MEMORY_UTILIZATION=0.9
 VLLM_SWAP_SPACE=4
@@ -434,10 +442,10 @@ ssh agent0@192.168.10.29 'ls -la /opt/citadel/'
 **Configuration Loading Errors:**
 ```bash
 # Check for syntax errors
-ssh agent0@192.168.10.29 'cd /opt/citadel/configs && python3 -m py_compile base_settings.py'
+ssh agent0@192.168.10.28 'cd /opt/citadel/configs  python3 -m py_compile base_settings.py'
 
 # Test individual components
-ssh agent0@192.168.10.29 'cd /opt/citadel/configs && python3 -c "from base_settings import BaseConfig; print(BaseConfig())"'
+ssh agent0@192.168.10.28 'cd /opt/citadel/configs  python3 -c "from base_settings import BaseConfig; print(BaseConfig())"'
 
 # Check environment file format
 ssh agent0@192.168.10.29 'cat /opt/citadel/configs/.env'

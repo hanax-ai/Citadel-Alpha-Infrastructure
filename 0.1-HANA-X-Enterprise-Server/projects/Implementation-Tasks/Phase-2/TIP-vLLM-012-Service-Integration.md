@@ -12,7 +12,13 @@
 
 ## 🎯 Objective
 
-Create systemd services for production deployment with proper startup/shutdown procedures, service dependencies, auto-restart capabilities, and monitoring integration.
+Create systemd services for enterprise model deployment with proper startup/shutdown procedures, service dependencies, auto-restart capabilities, and monitoring integration.
+
+**Target Enterprise Models:**
+- **DeepSeek-R1-Distill-Qwen-32B**: Primary enterprise model service integration
+- **Mixtral-8x7B-Instruct-v0.1**: Enterprise instruction model service
+- **Yi-34B-Chat**: Large parameter model service optimization
+- **openchat-3.5-0106**: Customer service model service configuration
 
 ---
 
@@ -249,12 +255,20 @@ log "Configuration loaded: Host=$HOST, Port=$PORT, TP=$TENSOR_PARALLEL"
 # Create log directory if it doesn't exist
 mkdir -p "$LOG_DIR"
 
-# Check for available models
+# Check for available enterprise models
 AVAILABLE_MODELS=()
+ENTERPRISE_MODELS=("DeepSeek-R1-Distill-Qwen-32B" "Mixtral-8x7B-Instruct-v0.1" "Yi-34B-Chat" "openchat-3.5-0106")
 if [[ -d "$MODEL_LINKS_PATH" ]]; then
     while IFS= read -r -d '' model; do
         if [[ -L "$model" && -e "$model" ]]; then
-            AVAILABLE_MODELS+=("$(basename "$model")")
+            model_name="$(basename "$model")"
+            # Prioritize enterprise models
+            for enterprise_model in "${ENTERPRISE_MODELS[@]}"; do
+                if [[ "$model_name" == *"$enterprise_model"* ]]; then
+                    AVAILABLE_MODELS=("$model_name" "${AVAILABLE_MODELS[@]}")
+                    break
+                fi
+            done
         fi
     done < <(find "$MODEL_LINKS_PATH" -type l -print0)
 fi

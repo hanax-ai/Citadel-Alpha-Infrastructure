@@ -1,9 +1,10 @@
 # 🔧 Task 0.5: Storage Configuration Validation
 
-**Objective**: Verify storage mounts and directory structure  
+**Objective**: Verify storage capacity for enterprise model deployment  
 **Duration**: 15 minutes  
 **Dependencies**: Task 0.4 (NVIDIA Driver Verification)  
-**Success Criteria**: Required mounts accessible, sufficient space available, proper permissions
+**Related Models**: DeepSeek-R1-Distill-Qwen-32B, Mixtral-8x7B-Instruct-v0.1, Yi-34B-Chat, openchat-3.5-0106  
+**Success Criteria**: Storage sufficient for enterprise models, mounts accessible, proper permissions
 
 ## Prerequisites
 - [ ] Task 0.4 completed successfully (NVIDIA verified)
@@ -31,13 +32,14 @@ ssh agent0@192.168.10.29 'ls -la /mnt/' && echo "✅ Mount Points: EXIST" || ech
 ```bash
 echo "🔍 Verifying storage capacity on hx-llm-server-01..."
 
-# Check model storage capacity
+# Check model storage capacity for enterprise models
+# Enterprise models require significant storage: DeepSeek-R1-Distill-Qwen-32B (~64GB), Yi-34B-Chat (~68GB)
 if ssh agent0@192.168.10.29 'mountpoint -q /mnt/citadel-models'; then
     MODEL_CAPACITY=$(ssh agent0@192.168.10.29 'df -BG /mnt/citadel-models | tail -1 | awk "{print \$2}" | sed "s/G//"')
     if [ "$MODEL_CAPACITY" -ge 2000 ]; then
-        echo "✅ Model Storage Capacity: PASS (${MODEL_CAPACITY}GB ≥ 2TB)"
+        echo "✅ Model Storage Capacity: PASS (${MODEL_CAPACITY}GB ≥ 2TB for enterprise models)"
     else
-        echo "❌ Model Storage Capacity: FAIL (${MODEL_CAPACITY}GB < 2TB)"
+        echo "❌ Model Storage Capacity: FAIL (${MODEL_CAPACITY}GB < 2TB required for enterprise models)"
     fi
 else
     echo "ℹ️  Model Storage: Not mounted yet"

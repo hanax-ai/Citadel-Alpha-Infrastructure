@@ -1,9 +1,10 @@
 # 🔧 Task 0.2: Hardware Specification Verification
 
-**Objective**: Document and verify hardware specifications on both servers  
+**Objective**: Document and verify hardware specifications for enterprise models deployment  
 **Duration**: 30 minutes  
 **Dependencies**: Task 0.1 (Server Connectivity Validation)  
-**Success Criteria**: Hardware meets minimum requirements and is properly documented
+**Related Models**: DeepSeek-R1-Distill-Qwen-32B, Mixtral-8x7B-Instruct-v0.1, Yi-34B-Chat, openchat-3.5-0106  
+**Success Criteria**: Hardware meets enterprise model requirements and is properly documented
 
 ## Prerequisites
 - [ ] Task 0.1 completed successfully (SSH access confirmed)
@@ -20,12 +21,13 @@ ssh agent0@192.168.10.29 'lscpu | grep -E "(Model name|CPU\(s\)|Socket|Thread)"'
 # Count cores and threads
 ssh agent0@192.168.10.29 'nproc && echo "Total cores: $(nproc)"'
 
-# Verify minimum requirement (16+ cores)
+# Verify minimum requirement for enterprise models (16+ cores)
+# Enterprise models like DeepSeek-R1-Distill-Qwen-32B require significant CPU resources
 CORES=$(ssh agent0@192.168.10.29 'nproc')
 if [ "$CORES" -ge 16 ]; then
-    echo "✅ CPU Cores: PASS ($CORES cores ≥ 16 required)"
+    echo "✅ CPU Cores: PASS ($CORES cores ≥ 16 required for enterprise models)"
 else
-    echo "❌ CPU Cores: FAIL ($CORES cores < 16 required)"
+    echo "❌ CPU Cores: FAIL ($CORES cores < 16 required for enterprise models)"
 fi
 ```
 
@@ -36,12 +38,13 @@ echo "🔍 Verifying memory on hx-llm-server-01..."
 # Get memory information
 ssh agent0@192.168.10.29 'free -h'
 
-# Check total memory (minimum 128GB)
+# Check total memory for enterprise models (minimum 128GB)
+# Yi-34B-Chat and DeepSeek-R1-Distill-Qwen-32B require substantial memory
 MEMORY_GB=$(ssh agent0@192.168.10.29 'free -g | grep "Mem:" | awk "{print \$2}"')
 if [ "$MEMORY_GB" -ge 125 ]; then
-    echo "✅ Memory: PASS (${MEMORY_GB}GB ≥ 125GB required)"
+    echo "✅ Memory: PASS (${MEMORY_GB}GB ≥ 125GB required for enterprise models)"
 else
-    echo "❌ Memory: FAIL (${MEMORY_GB}GB < 125GB required)"
+    echo "❌ Memory: FAIL (${MEMORY_GB}GB < 125GB required for enterprise models)"
 fi
 ```
 

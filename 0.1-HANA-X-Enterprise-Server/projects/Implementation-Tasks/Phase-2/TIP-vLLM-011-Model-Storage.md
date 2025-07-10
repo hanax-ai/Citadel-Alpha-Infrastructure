@@ -12,7 +12,13 @@
 
 ## 🎯 Objective
 
-Configure model storage with intelligent symlink management, cache optimization, and storage efficiency for both servers.
+Configure model storage with intelligent symlink management optimized for enterprise models, cache optimization, and storage efficiency for both servers.
+
+**Target Enterprise Models:**
+- **DeepSeek-R1-Distill-Qwen-32B**: ~64GB storage requirement, primary enterprise model
+- **Mixtral-8x7B-Instruct-v0.1**: ~45GB storage requirement, instruction model
+- **Yi-34B-Chat**: ~68GB storage requirement, largest enterprise model
+- **openchat-3.5-0106**: ~7GB storage requirement, lightweight customer service model
 
 ---
 
@@ -79,19 +85,63 @@ Create intelligent symlink system for efficient model sharing and server-specifi
   "servers": {
     "hx-llm-server-01": {
       "server_id": "server-01",
+      "role": "enterprise-primary",
       "priority_models": [
+        "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
         "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        "microsoft/DialoGPT-large"
+        "01-ai/Yi-34B-Chat",
+        "openchat/openchat-3.5-0106"
       ],
+      "model_specifications": {
+        "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B": {
+          "size_gb": 64,
+          "vram_requirement_gb": 48,
+          "tensor_parallel_size": 2,
+          "use_case": "business-critical applications"
+        },
+        "mistralai/Mixtral-8x7B-Instruct-v0.1": {
+          "size_gb": 45,
+          "vram_requirement_gb": 32,
+          "tensor_parallel_size": 2,
+          "use_case": "instruction-following tasks"
+        },
+        "01-ai/Yi-34B-Chat": {
+          "size_gb": 68,
+          "vram_requirement_gb": 52,
+          "tensor_parallel_size": 2,
+          "use_case": "advanced conversation"
+        },
+        "openchat/openchat-3.5-0106": {
+          "size_gb": 7,
+          "vram_requirement_gb": 8,
+          "tensor_parallel_size": 1,
+          "use_case": "customer service optimization"
+        }
+      },
       "local_cache_size": "500GB",
       "model_links_path": "/opt/citadel/model-links/server-01"
     },
     "hx-llm-server-02": {
       "server_id": "server-02", 
+      "role": "enterprise-secondary",
       "priority_models": [
-        "deepseek-ai/deepseek-coder-14b-instruct",
-        "codellama/CodeLlama-13b-Instruct-hf"
+        "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+        "openchat/openchat-3.5-0106"
       ],
+      "model_specifications": {
+        "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B": {
+          "size_gb": 64,
+          "vram_requirement_gb": 48,
+          "tensor_parallel_size": 2,
+          "use_case": "business-critical backup"
+        },
+        "openchat/openchat-3.5-0106": {
+          "size_gb": 7,
+          "vram_requirement_gb": 8,
+          "tensor_parallel_size": 1,
+          "use_case": "customer service"
+        }
+      },
       "local_cache_size": "500GB",
       "model_links_path": "/opt/citadel/model-links/server-02"
     }

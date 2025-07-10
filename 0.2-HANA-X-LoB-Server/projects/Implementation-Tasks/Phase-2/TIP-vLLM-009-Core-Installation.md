@@ -12,7 +12,7 @@
 
 ## 🎯 Objective
 
-Install latest stable vLLM version with all required dependencies on both hx-llm-server-01 (192.168.10.29) and hx-llm-server-02 (192.168.10.28).
+Install latest stable vLLM version with development-focused optimizations and dependencies for hx-llm-server-02 (192.168.10.28) to support LoB development models: Nous-Hermes-2-Mixtral-8x7B-DPO, Phi-3-mini-4k-instruct, Qwen-Coder-DeepSeek-R1-14B, and imp-v1-3b.
 
 ---
 
@@ -126,13 +126,31 @@ python -c "from vllm.entrypoints.api_server import app; print('API server import
     "method": "pypi",
     "version": "latest",
     "extras": ["cuda"],
-    "verify_gpu": true
+    "verify_gpu": true,
+    "target_server": "hx-llm-server-02",
+    "server_role": "lob-development"
+  },
+  "target_models": {
+    "primary_models": [
+      "NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO",
+      "microsoft/Phi-3-mini-4k-instruct",
+      "deepseek-ai/Qwen-Coder-DeepSeek-R1-14B",
+      "microsoft/imp-v1-3b"
+    ],
+    "model_categories": {
+      "coding_assistance": "Nous-Hermes-2-Mixtral-8x7B-DPO",
+      "lightweight_tasks": "Phi-3-mini-4k-instruct",
+      "advanced_coding": "Qwen-Coder-DeepSeek-R1-14B",
+      "efficient_inference": "imp-v1-3b"
+    }
   },
   "dependencies": {
-    "ray": ">=2.5.0",
-    "fastapi": ">=0.100.0",
-    "uvicorn": ">=0.18.0",
-    "transformers": ">=4.35.0"
+    "ray": "\u003e=2.5.0",
+    "fastapi": "\u003e=0.100.0",
+    "uvicorn": "\u003e=0.18.0",
+    "transformers": "\u003e=4.35.0",
+    "tokenizers": "\u003e=0.15.0",
+    "sentencepiece": "\u003e=0.1.96"
   },
   "validation": {
     "import_tests": [
@@ -142,7 +160,8 @@ python -c "from vllm.entrypoints.api_server import app; print('API server import
       "vllm.entrypoints.api_server"
     ],
     "cuda_required": true,
-    "min_gpu_count": 2
+    "min_gpu_count": 2,
+    "development_features": true
   }
 }
 ```
@@ -171,6 +190,14 @@ pip install vllm 2>&1 | tee -a "$LOG_FILE"
 # Install additional dependencies
 echo "Installing additional dependencies..." | tee -a "$LOG_FILE"
 pip install ray>=2.5.0 fastapi>=0.100.0 uvicorn[standard] transformers>=4.35.0 2>&1 | tee -a "$LOG_FILE"
+
+# Install development-specific dependencies
+echo "Installing development-specific dependencies..." | tee -a "$LOG_FILE"
+pip install tokenizers>=0.15.0 sentencepiece>=0.1.96 2>&1 | tee -a "$LOG_FILE"
+
+# Install code analysis tools for development models
+echo "Installing code analysis tools..." | tee -a "$LOG_FILE"
+pip install tree-sitter tree-sitter-python tree-sitter-javascript 2>&1 | tee -a "$LOG_FILE"
 
 # Verify installation
 echo "Verifying installation..." | tee -a "$LOG_FILE"

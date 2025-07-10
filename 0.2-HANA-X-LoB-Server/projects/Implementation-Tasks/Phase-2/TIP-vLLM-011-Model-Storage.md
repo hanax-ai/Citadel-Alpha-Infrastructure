@@ -80,8 +80,10 @@ Create intelligent symlink system for efficient model sharing and server-specifi
     "hx-llm-server-01": {
       "server_id": "server-01",
       "priority_models": [
+        "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
         "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        "microsoft/DialoGPT-large"
+        "01-ai/Yi-34B-Chat",
+        "openchat/openchat-3.5-0106"
       ],
       "local_cache_size": "500GB",
       "model_links_path": "/opt/citadel/model-links/server-01"
@@ -89,8 +91,10 @@ Create intelligent symlink system for efficient model sharing and server-specifi
     "hx-llm-server-02": {
       "server_id": "server-02", 
       "priority_models": [
-        "deepseek-ai/deepseek-coder-14b-instruct",
-        "codellama/CodeLlama-13b-Instruct-hf"
+        "NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO",
+        "microsoft/Phi-3-mini-4k-instruct",
+        "deepseek-ai/Qwen-Coder-DeepSeek-R1-14B",
+        "microsoft/imp-v1-3b"
       ],
       "local_cache_size": "500GB",
       "model_links_path": "/opt/citadel/model-links/server-02"

@@ -12,7 +12,13 @@
 
 ## 🎯 Objective
 
-Configure vLLM for OpenAI-compatible API serving on both servers with port differentiation and proper endpoint structure.
+Configure vLLM for OpenAI-compatible API serving optimized for enterprise models on both servers with port differentiation and proper endpoint structure.
+
+**Target Enterprise Models:**
+- **DeepSeek-R1-Distill-Qwen-32B**: Primary enterprise model for business-critical applications
+- **Mixtral-8x7B-Instruct-v0.1**: Enterprise instruction-following model
+- **Yi-34B-Chat**: Advanced enterprise conversation model
+- **openchat-3.5-0106**: Customer service optimization model
 
 ---
 
@@ -99,6 +105,7 @@ Develop start/stop scripts for API servers with proper parameter handling.
     "block_size": 16,
     "swap_space": 4,
     "gpu_memory_utilization": 0.90,
+    "enterprise_model_optimization": true,
     "max_num_batched_tokens": null,
     "max_num_seqs": 256,
     "max_paddings": 256,
