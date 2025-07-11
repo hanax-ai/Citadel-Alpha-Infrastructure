@@ -9,10 +9,10 @@
 ## Rule Group 1000: Task Initialization & Context
 
 - **Rule 1001 - Review Project Context:**  
-  Review /home/agent0/Citadel-Alpha-Infrastructure/0.13-HANA-X-Program/HXP-Prd.md.
+  Review /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Program/01-HXP-PRD.md.
 
 - **Rule 1002 - Review Coding Standards:**  
-  Review /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Governance/hx-coding-standards.md.
+  Review /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Program/12-HXP-Governance/hx-coding-standards.md.
 
 - **Rule 1003 - Acknowledge Monorepo Structure:**  
   Confirm understanding of the project structure.
@@ -28,7 +28,7 @@
   Place code in the correct project directory (service-specific vs. shared-library).
 
 - **Rule 2002 - Adhere to All Standards:**  
-  Follow all conventions in /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Governance/hx-coding-standards.md.
+  Follow all conventions in /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Program/12-HXP-Governance/hx-coding-standards.md.
 
 - **Rule 2003 - Generate Unit Tests:**  
   Generate corresponding unit tests for new logic.

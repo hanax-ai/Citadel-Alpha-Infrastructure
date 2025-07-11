@@ -8,7 +8,7 @@ This document provides real-time visibility into the execution status of all sco
 - [`01-HXP-PRD.md`](./01-HXP-PRD.md) – Program PRD
 - [`../0.1-HANA-X-Enterprise-Server/project-plan/`](../0.1-HANA-X-Enterprise-Server/project-plan/) – Enterprise Server Project
 - [`../0.2-HANA-X-LoB-Server/project-plan/`](../0.2-HANA-X-LoB-Server/project-plan/) – LoB Server Project
-- [`../0.0-HANA-X-Governance/`](../0.0-HANA-X-Governance/) – Governance Framework
+- [`./12-HXP-Governance/`](./12-HXP-Governance/) – Governance Framework
 - [`../Rules.md`](../Rules.md) – AI Operating Rules
 
 ---

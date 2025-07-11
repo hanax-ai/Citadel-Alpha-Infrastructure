@@ -26,7 +26,7 @@ This document serves as the basis for coordinating the following sub-projects:
 > Each sub-project operates independently while maintaining program-level coordination and oversight.
 
 ### 🔗 Related Projects
-- **Governance Framework**: [`../0.0-HANA-X-Governance/`](../0.0-HANA-X-Governance/)
+- **Governance Framework**: [`./12-HXP-Governance/`](./12-HXP-Governance/)
 - **AI Operating Rules**: [`../Rules.md`](../Rules.md)
 - **Shared Library**: [`../0.11-HANA-X-Shared-Library/`](../0.11-HANA-X-Shared-Library/)
 
@@ -218,7 +218,7 @@ Coordinate the deployment of two specialized vLLM servers to:
 - **Hugging Face** token access for model downloads
 
 #### Internal Dependencies
-- **Governance Framework** ([`../0.0-HANA-X-Governance/`](../0.0-HANA-X-Governance/))
+- **Governance Framework** ([`./12-HXP-Governance/`](./12-HXP-Governance/))
 - **AI Operating Rules** ([`../Rules.md`](../Rules.md))
 - **Shared Library** ([`../0.11-HANA-X-Shared-Library/`](../0.11-HANA-X-Shared-Library/))
 - **Monitoring Infrastructure** (hx-metric-server)

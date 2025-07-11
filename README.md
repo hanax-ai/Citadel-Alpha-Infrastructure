@@ -23,7 +23,7 @@ This repository contains the comprehensive infrastructure setup framework for th
 
 ```
 Citadel-Alpha-Infrastructure/
-├── 0.0-HANA-X-Governance/         # Governance framework
+├── 0.0-HANA-X-Program/            # Program-level governance
 │   ├── examples/                 # Governance examples
 │   ├── references/               # Governance references
 ├── 0.1-HANA-X-Enterprise-Server/  # Enterprise server projects
@@ -42,7 +42,7 @@ Citadel-Alpha-Infrastructure/
 │   ├── src/                      # Shared modules
 │   ├── tests/                    # Shared test cases
 ├── 0.12-X-Archive/                # Archived projects and files
-└── 0.13-HANA-X-Program/           # Program-level orchestration
+└── 0.0-HANA-X-Program/            # Program-level orchestration
 ```
 
 ## Key Features
@@ -75,7 +75,7 @@ Citadel-Alpha-Infrastructure/
 ### 1. Review Governance Framework
 Start by reviewing the comprehensive governance documentation:
 ```bash
-cd 0.0-HANA-X-Governance/
+cd 0.0-HANA-X-Program/12-HXP-Governance/
 cat README.md
 ```
 
@@ -139,14 +139,14 @@ All activities must comply with:
 ### 📊 Project Status & Tracking
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [Program Status](0.13-HANA-X-Program/04-HXP-Status.md) | Program-level oversight | ✅ Ready |
+| [Program Status](0.0-HANA-X-Program/04-HXP-Status.md) | Program-level oversight | ✅ Ready |
 | [Enterprise Status](0.1-HANA-X-Enterprise-Server/project-plan/04-HXES-Status.md) | Enterprise server progress | 🔧 In Progress |
 | [LoB Status](0.2-HANA-X-LoB-Server/project-plan/04-HXLoB-Status.md) | Development server progress | ⏳ Pending |
 
 ### 📋 Product Requirements
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [Program PRD](0.13-HANA-X-Program/01-HXP-PRD.md) | Program-level requirements | ✅ Ready |
+| [Program PRD](0.0-HANA-X-Program/01-HXP-PRD.md) | Program-level requirements | ✅ Ready |
 | [Enterprise PRD](0.1-HANA-X-Enterprise-Server/project-plan/01-HXEX-PRD.md) | Enterprise server requirements | ✅ Ready |
 | [LoB PRD](0.2-HANA-X-LoB-Server/project-plan/01-HXLoB-PRD.md) | Development server requirements | ✅ Ready |
 
@@ -160,7 +160,7 @@ All activities must comply with:
 | Document | Purpose | Status |
 |----------|---------|--------|
 | [AI Operating Rules](Rules.md) | AI assistant procedures | ✅ Ready |
-| [Governance Framework](0.0-HANA-X-Governance/README.md) | Complete governance overview | ✅ Ready |
+| [Governance Framework](0.0-HANA-X-Program/12-HXP-Governance/README.md) | Complete governance overview | ✅ Ready |
 | [Shared Library](0.11-HANA-X-Shared-Library/hana-x-shared-library.md) | Code reuse documentation | 🔄 Expanding |
 
 ## 🔗 Document Traceability

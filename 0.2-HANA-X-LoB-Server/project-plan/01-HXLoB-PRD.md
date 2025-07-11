@@ -26,9 +26,9 @@ This document serves as the basis for the following deliverables:
 > Each deliverable is a standalone artifact with clear purpose, audience, and update lifecycle.
 
 ### 🔗 Related Projects
-- **Program Level**: [`../../0.13-HANA-X-Program/HXP-Prd.md`](../../0.13-HANA-X-Program/HXP-Prd.md)
+- **Program Level**: [`../../0.0-HANA-X-Program/01-HXP-PRD.md`](../../0.0-HANA-X-Program/01-HXP-PRD.md)
 - **Enterprise Server**: [`../../0.1-HANA-X-Enterprise-Server/project-plan/01-HXEX-PRD.md`](../../0.1-HANA-X-Enterprise-Server/project-plan/01-HXEX-PRD.md)
-- **Governance**: [`../../0.0-HANA-X-Governance/`](../../0.0-HANA-X-Governance/)
+- **Governance**: [`../../0.0-HANA-X-Program/12-HXP-Governance/`](../../0.0-HANA-X-Program/12-HXP-Governance/)
 - **AI Operating Rules**: [`../../Rules.md`](../../Rules.md)
 
 ---
