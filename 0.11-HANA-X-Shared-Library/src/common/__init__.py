@@ -13,7 +13,8 @@ from .utils import (
     get_system_info,
     validate_port,
     format_bytes,
-    run_command_with_timeout
+    run_command_with_timeout,
+    check_gpu_availability
 )
 
 __all__ = [
@@ -21,5 +22,6 @@ __all__ = [
     "get_system_info", 
     "validate_port",
     "format_bytes",
-    "run_command_with_timeout"
+    "run_command_with_timeout",
+    "check_gpu_availability"
 ]

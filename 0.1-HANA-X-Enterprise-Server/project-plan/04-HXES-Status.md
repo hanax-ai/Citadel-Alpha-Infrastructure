@@ -10,12 +10,14 @@ This document provides real-time visibility into the execution status of all ent
 ---
 
 ## 🧭 Reference Documents
-- `PRD-vLLM-001-Enterprise-Server-Deployment.md`
-- `TL-ENT-001` – Enterprise Task List
-- `TIP-ENT-001` – Enterprise Task Implementation Plan (when created)
-- `TS-ENT-001` – Enterprise Test Suite Specification (when created)
-- `BL-ENT-001` – Enterprise Project Backlog
-- `DT-ENT-001` – Enterprise Defect Tracker
+- [`01-HXEX-PRD.md`](./01-HXEX-PRD.md) – Enterprise Server PRD
+- [`02-HXES-Task-List.md`](./02-HXES-Task-List.md) – Enterprise Task List
+- [`05-HXES-Test-Suite-Specification.md`](./05-HXES-Test-Suite-Specification.md) – Enterprise Test Suite Specification
+- [`07-HXES-Defect-Tracker.md`](./07-HXES-Defect-Tracker.md) – Enterprise Defect Tracker
+- [`08-HXES-Results.md`](./08-HXES-Results.md) – Enterprise Results
+- [`09-HXES-KDD.md`](./09-HXES-KDD.md) – Enterprise Knowledge Discovery
+- [`10-HXES-Backlog.md`](./10-HXES-Backlog.md) – Enterprise Project Backlog
+- [`Implementation-Tasks/`](./Implementation-Tasks/) – Enterprise Task Implementation Plans
 
 ---
 

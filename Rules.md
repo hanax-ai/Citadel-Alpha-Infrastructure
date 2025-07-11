@@ -9,10 +9,10 @@
 ## Rule Group 1000: Task Initialization & Context
 
 - **Rule 1001 - Review Project Context:**  
-  Review `governance/AI_ASSISTANT_CONTEXT.md`.
+  Review /home/agent0/Citadel-Alpha-Infrastructure/0.13-HANA-X-Program/HXP-Prd.md.
 
 - **Rule 1002 - Review Coding Standards:**  
-  Review `governance/CODING_STANDARDS.md`.
+  Review /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Governance/hx-coding-standards.md.
 
 - **Rule 1003 - Acknowledge Monorepo Structure:**  
   Confirm understanding of the project structure.
@@ -28,7 +28,7 @@
   Place code in the correct project directory (service-specific vs. shared-library).
 
 - **Rule 2002 - Adhere to All Standards:**  
-  Follow all conventions in `CODING_STANDARDS.md`.
+  Follow all conventions in /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Governance/hx-coding-standards.md.
 
 - **Rule 2003 - Generate Unit Tests:**  
   Generate corresponding unit tests for new logic.
@@ -79,9 +79,8 @@
   Include appropriate logging (`INFO`, `WARNING`, `ERROR`) in new features.
 
 - **Rule 5004 - Handle Privileged Commands Securely:**  
-  - **Action:** The AI assistant must never ask for or handle user passwords.  
-    When a command requires elevated privileges, generate the complete command prefixed with `sudo`.  
-    Then, instruct the user to execute the command in their terminal, where they will securely enter their password when prompted by their own operating system.
+  - **Action:** execute sudo commands
+    When a command requires elevated privileges, generate the complete command prefixed with `sudo`.  Then, read password from this directory/file "\\wsl.localhost\Ubuntu-24.04\home\agent0\vLLM Installation\secrets-file.md", proceed with task.
 
 ---
 

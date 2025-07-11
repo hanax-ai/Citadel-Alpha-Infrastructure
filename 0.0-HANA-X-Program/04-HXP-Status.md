@@ -5,25 +5,34 @@ This document provides real-time visibility into the execution status of all sco
 ---
 
 ## 🧭 Reference Documents
-- `PRD_vllm_model_install.md`
-- `TL-001` – Task List
-- `TIP-001` – Task Implementation Plan
-- `TS-001` – Test Suite Specification
-- `PRL-001` – Project Repository Layout
+- [`01-HXP-PRD.md`](./01-HXP-PRD.md) – Program PRD
+- [`../0.1-HANA-X-Enterprise-Server/project-plan/`](../0.1-HANA-X-Enterprise-Server/project-plan/) – Enterprise Server Project
+- [`../0.2-HANA-X-LoB-Server/project-plan/`](../0.2-HANA-X-LoB-Server/project-plan/) – LoB Server Project
+- [`../0.0-HANA-X-Governance/`](../0.0-HANA-X-Governance/) – Governance Framework
+- [`../Rules.md`](../Rules.md) – AI Operating Rules
 
 ---
 
-## ✅ Project Scope Status
+## ✅ Program-Level Project Status
 
-| Scope | Description                         | Owner      | Status    | Notes |
-|-------|-------------------------------------|------------|-----------|-------|
-| 0     | Metrics & Observability             | [name]     | ⬜ Pending |       |
-| 1     | OS Verification & Prep              | [name]     | ⬜ Pending |       |
-| 2     | Environment & Dependency Setup      | [name]     | ⬜ Pending |       |
-| 3     | Directory Layout                    | [name]     | ⬜ Pending |       |
-| 4     | vLLM Installation                   | [name]     | ⬜ Pending |       |
-| 5     | Model Installation                  | [name]     | ⬜ Pending |       |
-| 6     | Validation & Testing                | [name]     | ⬜ Pending |       |
+### Server-Specific Projects
+
+|| Server | Project Status | Owner | Progress | Notes |
+||--------|----------------|-------|----------|-------|
+|| **hx-llm-server-01** | [Enterprise Server](../0.1-HANA-X-Enterprise-Server/project-plan/04-HXES-Status.md) | Enterprise Team | 0% | Business-focused models |
+|| **hx-llm-server-02** | [LoB Server](../0.2-HANA-X-LoB-Server/project-plan/04-HXLoB-Status.md) | Development Team | 0% | Development-focused models |
+
+### Legacy Program Scope (Consolidated into Server Projects)
+
+|| Scope | Description                         | Status    | Notes |
+||-------|-------------------------------------|-----------|-------|
+|| 0     | Metrics & Observability             | ✅ Complete | Moved to individual server projects |
+|| 1     | OS Verification & Prep              | ✅ Complete | Moved to individual server projects |
+|| 2     | Environment & Dependency Setup      | ✅ Complete | Moved to individual server projects |
+|| 3     | Directory Layout                    | ✅ Complete | Moved to individual server projects |
+|| 4     | vLLM Installation                   | ✅ Complete | Moved to individual server projects |
+|| 5     | Model Installation                  | ✅ Complete | Moved to individual server projects |
+|| 6     | Validation & Testing                | ✅ Complete | Moved to individual server projects |
 
 Legend: ⬜ Pending | 🟨 In Progress | ✅ Complete
 

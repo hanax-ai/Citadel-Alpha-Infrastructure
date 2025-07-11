@@ -16,12 +16,20 @@ The deployment leverages lessons learned from the reference implementation, incl
 
 This document serves as the basis for the following deliverables:
 
-1. ✅ **Task List** (`TL-vLLM-001`): Top-level tasks derived from this PRD with clear objectives and traceability
-2. ✅ **Task Implementation Plan** (`TIP-vLLM-001`): Structured, hierarchical execution plan with SMART+ST alignment
-3. ✅ **Test Suite Specification** (`TS-vLLM-001`): Comprehensive pytest test suite covering all validation requirements
-4. ✅ **Project Repository Layout** (`PRL-vLLM-001`): Organized directory structure following project standards
+1. ✅ **Task List** ([`02-HXLoB-Task-List.md`](./02-HXLoB-Task-List.md)): Top-level tasks derived from this PRD with clear objectives and traceability
+2. ✅ **Task Implementation Plans** ([`Implementation-Tasks/`](./Implementation-Tasks/)): Structured, hierarchical execution plans with SMART+ST alignment
+3. ✅ **Test Suite Specification** ([`05-HXLoB-Test-Suite-Specification.md`](./05-HXLoB-Test-Suite-Specification.md)): Comprehensive pytest test suite covering all validation requirements
+4. ✅ **Status Tracking** ([`04-HXLoB-Status.md`](./04-HXLoB-Status.md)): Real-time project status and progress tracking
+5. ✅ **Project Backlog** ([`10-HXLoB-Backlog.md`](./10-HXLoB-Backlog.md)): Organized backlog management
+6. ✅ **Defect Tracking** ([`07-HXLoB-Defect-Tracker.md`](./07-HXLoB-Defect-Tracker.md)): Issue management and resolution tracking
 
 > Each deliverable is a standalone artifact with clear purpose, audience, and update lifecycle.
+
+### 🔗 Related Projects
+- **Program Level**: [`../../0.13-HANA-X-Program/HXP-Prd.md`](../../0.13-HANA-X-Program/HXP-Prd.md)
+- **Enterprise Server**: [`../../0.1-HANA-X-Enterprise-Server/project-plan/01-HXEX-PRD.md`](../../0.1-HANA-X-Enterprise-Server/project-plan/01-HXEX-PRD.md)
+- **Governance**: [`../../0.0-HANA-X-Governance/`](../../0.0-HANA-X-Governance/)
+- **AI Operating Rules**: [`../../Rules.md`](../../Rules.md)
 
 ---
 

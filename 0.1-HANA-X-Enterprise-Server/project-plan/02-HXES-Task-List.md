@@ -6,7 +6,15 @@
 **Version:** 1.0  
 **Date:** 2025-01-10  
 **Server:** hx-llm-server-01 (192.168.10.29:8000)  
-**Related PRD:** `prd_vllm_dual_server_deployment.md`
+**Related PRD:** [`01-HXEX-PRD.md`](./01-HXEX-PRD.md)
+
+### 🔗 Related Documents
+- **PRD**: [`01-HXEX-PRD.md`](./01-HXEX-PRD.md) – Enterprise Server Product Requirements
+- **Status**: [`04-HXES-Status.md`](./04-HXES-Status.md) – Real-time project status tracking
+- **Test Suite**: [`05-HXES-Test-Suite-Specification.md`](./05-HXES-Test-Suite-Specification.md) – Comprehensive validation
+- **Implementation**: [`Implementation-Tasks/`](./Implementation-Tasks/) – Detailed task implementation plans
+- **Backlog**: [`10-HXES-Backlog.md`](./10-HXES-Backlog.md) – Project backlog management
+- **Defect Tracker**: [`07-HXES-Defect-Tracker.md`](./07-HXES-Defect-Tracker.md) – Issue management
 
 ---
 

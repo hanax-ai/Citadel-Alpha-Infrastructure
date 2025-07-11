@@ -6,7 +6,15 @@
 **Version:** 1.0  
 **Date:** 2025-01-10  
 **Server:** hx-llm-server-02 (192.168.10.28:8001)  
-**Related PRD:** `prd_vllm_dual_server_deployment.md`
+**Related PRD:** [`01-HXLoB-PRD.md`](./01-HXLoB-PRD.md)
+
+### 🔗 Related Documents
+- **PRD**: [`01-HXLoB-PRD.md`](./01-HXLoB-PRD.md) – LoB Server Product Requirements
+- **Status**: [`04-HXLoB-Status.md`](./04-HXLoB-Status.md) – Real-time project status tracking
+- **Test Suite**: [`05-HXLoB-Test-Suite-Specification.md`](./05-HXLoB-Test-Suite-Specification.md) – Comprehensive validation
+- **Implementation**: [`Implementation-Tasks/`](./Implementation-Tasks/) – Detailed task implementation plans
+- **Backlog**: [`10-HXLoB-Backlog.md`](./10-HXLoB-Backlog.md) – Project backlog management
+- **Defect Tracker**: [`07-HXLoB-Defect-Tracker.md`](./07-HXLoB-Defect-Tracker.md) – Issue management
 
 ---
 

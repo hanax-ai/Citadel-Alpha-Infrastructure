@@ -10,12 +10,14 @@ This document provides real-time visibility into the execution status of all dev
 ---
 
 ## 🧭 Reference Documents
-- `PRD-vLLM-001-LoB-Server-Deployment.md`
-- `TL-LOB-001` – LoB Development Task List
-- `TIP-LOB-001` – LoB Task Implementation Plan (when created)
-- `TS-LOB-001` – LoB Test Suite Specification (when created)
-- `BL-LOB-001` – LoB Development Project Backlog
-- `DT-LOB-001` – LoB Development Defect Tracker
+- [`01-HXLoB-PRD.md`](./01-HXLoB-PRD.md) – LoB Server PRD
+- [`02-HXLoB-Task-List.md`](./02-HXLoB-Task-List.md) – LoB Development Task List
+- [`05-HXLoB-Test-Suite-Specification.md`](./05-HXLoB-Test-Suite-Specification.md) – LoB Test Suite Specification
+- [`07-HXLoB-Defect-Tracker.md`](./07-HXLoB-Defect-Tracker.md) – LoB Development Defect Tracker
+- [`08-HXLoB-Results.md`](./08-HXLoB-Results.md) – LoB Results
+- [`09-HXLoB-KDD.md`](./09-HXLoB-KDD.md) – LoB Knowledge Discovery
+- [`10-HXLoB-Backlog.md`](./10-HXLoB-Backlog.md) – LoB Development Project Backlog
+- [`Implementation-Tasks/`](./Implementation-Tasks/) – LoB Task Implementation Plans
 
 ---
 
