@@ -1,10 +1,10 @@
 # 🚀 Citadel AI Infrastructure Program
 ## HANA-X Program: Enterprise AI Operating System Foundation
 
-[![Program Status](https://img.shields.io/badge/Status-Active-green)](0.0-HANA-X-Program/04-HXP-Status.md)
-[![Version](https://img.shields.io/badge/Version-1.6-blue)](0.0-HANA-X-Program/0.1-HXP-PRD.md)
-[![Infrastructure](https://img.shields.io/badge/Servers-9-orange)](0.0-HANA-X-Program/13-HXP-Architecture/network_architecture.md)
-[![Quality](https://img.shields.io/badge/Testing-Comprehensive-brightgreen)](0.0-HANA-X-Program/14-HXP-Quality-Assurance/integration_testing_framework.md)
+[![Program Status](https://img.shields.io/badge/Status-Active-green)](0.0-HANA-X-Program/0.0.1-HXP-Program-Plan/04-HXP-Status.md)
+[![Version](https://img.shields.io/badge/Version-1.6-blue)](0.0-HANA-X-Program/0.0.1-HXP-Program-Plan/0.1-HXP-PRD.md)
+[![Infrastructure](https://img.shields.io/badge/Servers-9-orange)](0.0-HANA-X-Program/0.0.2-HXP-Architecture/network_architecture.md)
+[![Quality](https://img.shields.io/badge/Testing-Comprehensive-brightgreen)](0.0-HANA-X-Program/0.0.3-HXP-Quality-Assurance/integration_testing_framework.md)
 
 ---
 
@@ -100,29 +100,26 @@ gantt
 ```
 Citadel-Alpha-Infrastructure/
 ├── 0.0-HANA-X-Program/             # 📊 Program-Level Governance
-│   ├── 0.1-HXP-PRD.md             # Product Requirements Document
-│   ├── 09-HXP-KDD.md              # Key Decisions Document
-│   ├── 10-HXP-Backlog.md          # Program Backlog
-│   ├── 12-HXP-Governance/         # Governance Framework
-│   ├── 13-HXP-Architecture/       # 🌐 Network Architecture
-│   └── 14-HXP-Quality-Assurance/  # 🧪 Integration Testing
-├── 0.1-HANA-X-Enterprise-Server/   # 🏢 Enterprise Server Projects
-│   ├── config/                    # Configuration management
-│   ├── projects/                  # Server-specific implementations
-│   ├── scripts/                   # Deployment automation
-│   ├── src/                       # Source code
-│   └── tests/                     # Validation suites
-├── 0.2-HANA-X-LoB-Server/          # 💼 Line of Business Server
-│   ├── config/
-│   ├── projects/
-│   ├── scripts/
-│   ├── src/
-│   └── tests/
-├── 0.11-HANA-X-Shared-Library/     # 📚 Shared Code Library
-│   ├── src/                       # Common modules
-│   ├── tests/                     # Shared test cases
-│   └── documentation/             # API documentation
-├── 0.12-X-Archive/                 # 📄 Archived Projects
+│   ├── 0.0.0-HXP-Governance/      # Governance Framework
+│   ├── 0.0.1-HXP-Program-Plan/    # Program Planning Documents
+│   │   ├── 0.1-HXP-PRD.md         # Product Requirements Document
+│   │   ├── 09-HXP-KDD.md          # Key Decisions Document
+│   │   └── 10-HXP-Backlog.md      # Program Backlog
+│   ├── 0.0.2-HXP-Architecture/    # 🌐 Network Architecture
+│   ├── 0.0.3-HXP-Quality-Assurance/ # 🧪 Integration Testing
+│   └── 0.0.4-HXP-Projects/        # 🚀 Server Implementation Projects
+│       ├── 0.0.4.1-HXP-SQL-Database-Server/     # Database Infrastructure
+│       ├── 0.0.4.2-HXP-Vector-Database-Server/  # Vector Database
+│       ├── 0.0.4.3-HXP-LoB-Server/              # 💼 Line of Business Server
+│       ├── 0.0.4.4-HXP-Enterprise-Server/       # 🏢 Enterprise Server
+│       ├── 0.0.4.5-HXP-Orchestration-Server/    # Task Orchestration
+│       ├── 0.0.4.6-HXP-Dev-Server/              # Development Server
+│       ├── 0.0.4.7-HXP-Test-Server/             # Testing Server
+│       ├── 0.0.4.8-HXP-Metrics-Server/          # Monitoring Server
+│       ├── 0.0.4.9-HXP-DevOps-Server/           # DevOps Automation
+│       ├── 0.0.4.10-HXP-Integration/            # System Integration
+│       └── 0.0.4.11-HXP-Shared-Library/         # 📚 Shared Code Library
+├── X-Archive/                      # 📄 Archived Projects
 └── Rules.md                        # 🤖 AI Operating Rules
 ```
 
@@ -158,40 +155,40 @@ Citadel-Alpha-Infrastructure/
 Start with the core program documentation:
 ```bash
 # Read the Program PRD
-cat 0.0-HANA-X-Program/0.1-HXP-PRD.md
+cat 0.0-HANA-X-Program/0.0.1-HXP-Program-Plan/0.1-HXP-PRD.md
 
 # Review Key Decisions
-cat 0.0-HANA-X-Program/09-HXP-KDD.md
+cat 0.0-HANA-X-Program/0.0.1-HXP-Program-Plan/09-HXP-KDD.md
 
 # Check Program Backlog
-cat 0.0-HANA-X-Program/10-HXP-Backlog.md
+cat 0.0-HANA-X-Program/0.0.1-HXP-Program-Plan/10-HXP-Backlog.md
 ```
 
 ### 2. 🌐 Understand Network Architecture
 Explore the infrastructure design:
 ```bash
 # Network Architecture Diagram
-cat 0.0-HANA-X-Program/13-HXP-Architecture/network_architecture.md
+cat 0.0-HANA-X-Program/0.0.2-HXP-Architecture/network_architecture.md
 ```
 
 ### 3. 🧪 Review Integration Testing
 Understand the quality assurance framework:
 ```bash
 # Integration Testing Framework
-cat 0.0-HANA-X-Program/14-HXP-Quality-Assurance/integration_testing_framework.md
+cat 0.0-HANA-X-Program/0.0.3-HXP-Quality-Assurance/integration_testing_framework.md
 ```
 
 ### 4. 🎯 Explore Governance Framework
 Review the complete governance documentation:
 ```bash
-cd 0.0-HANA-X-Program/12-HXP-Governance/
+cd 0.0-HANA-X-Program/0.0.0-HXP-Governance/
 cat README.md
 ```
 
 ### 5. 📚 Check Shared Libraries
 Review common utilities and modules:
 ```bash
-cd 0.11-HANA-X-Shared-Library/
+cd 0.0-HANA-X-Program/0.0.4-HXP-Projects/0.0.4.11-HXP-Shared-Library/
 cat hana-x-shared-library.md
 ```
 
@@ -265,29 +262,29 @@ All activities must comply with:
 ### 📊 Project Status & Tracking
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [Program Status](0.0-HANA-X-Program/04-HXP-Status.md) | Program-level oversight | ✅ Ready |
-| [Enterprise Status](0.1-HANA-X-Enterprise-Server/project-plan/04-HXES-Status.md) | Enterprise server progress | 🔧 In Progress |
-| [LoB Status](0.2-HANA-X-LoB-Server/project-plan/04-HXLoB-Status.md) | Development server progress | ⏳ Pending |
+|| [Program Status](0.0-HANA-X-Program/0.0.1-HXP-Program-Plan/04-HXP-Status.md) | Program-level oversight | ✅ Ready |
+|| [Enterprise Status](0.0-HANA-X-Program/0.0.4-HXP-Projects/0.0.4.4-HXP-Enterprise-Server/project-plan/04-HXES-Status.md) | Enterprise server progress | 🔧 In Progress |
+|| [LoB Status](0.0-HANA-X-Program/0.0.4-HXP-Projects/0.0.4.3-HXP-LoB-Server/project-plan/04-HXLoB-Status.md) | Development server progress | ⏳ Pending |
 
 ### 📋 Product Requirements
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [Program PRD](0.0-HANA-X-Program/01-HXP-PRD.md) | Program-level requirements | ✅ Ready |
-| [Enterprise PRD](0.1-HANA-X-Enterprise-Server/project-plan/01-HXEX-PRD.md) | Enterprise server requirements | ✅ Ready |
-| [LoB PRD](0.2-HANA-X-LoB-Server/project-plan/01-HXLoB-PRD.md) | Development server requirements | ✅ Ready |
+|| [Program PRD](0.0-HANA-X-Program/0.0.1-HXP-Program-Plan/0.1-HXP-PRD.md) | Program-level requirements | ✅ Ready |
+|| [Enterprise PRD](0.0-HANA-X-Program/0.0.4-HXP-Projects/0.0.4.4-HXP-Enterprise-Server/project-plan/01-HXEX-PRD.md) | Enterprise server requirements | ✅ Ready |
+|| [LoB PRD](0.0-HANA-X-Program/0.0.4-HXP-Projects/0.0.4.3-HXP-LoB-Server/project-plan/01-HXLoB-PRD.md) | Development server requirements | ✅ Ready |
 
 ### 📝 Task Management
 | Document | Purpose | Status |
 |----------|---------|--------|
-| [Enterprise Tasks](0.1-HANA-X-Enterprise-Server/project-plan/02-HXES-Task-List.md) | Enterprise task breakdown | ✅ Ready |
-| [LoB Tasks](0.2-HANA-X-LoB-Server/project-plan/02-HXLoB-Task-List.md) | Development task breakdown | ✅ Ready |
+|| [Enterprise Tasks](0.0-HANA-X-Program/0.0.4-HXP-Projects/0.0.4.4-HXP-Enterprise-Server/project-plan/02-HXES-Task-List.md) | Enterprise task breakdown | ✅ Ready |
+|| [LoB Tasks](0.0-HANA-X-Program/0.0.4-HXP-Projects/0.0.4.3-HXP-LoB-Server/project-plan/02-HXLoB-Task-List.md) | Development task breakdown | ✅ Ready |
 
 ### 🎛️ Governance & Standards
 | Document | Purpose | Status |
 |----------|---------|--------|
 | [AI Operating Rules](Rules.md) | AI assistant procedures | ✅ Ready |
-| [Governance Framework](0.0-HANA-X-Program/12-HXP-Governance/README.md) | Complete governance overview | ✅ Ready |
-| [Shared Library](0.11-HANA-X-Shared-Library/hana-x-shared-library.md) | Code reuse documentation | 🔄 Expanding |
+|| [Governance Framework](0.0-HANA-X-Program/0.0.0-HXP-Governance/README.md) | Complete governance overview | ✅ Ready |
+|| [Shared Library](0.0-HANA-X-Program/0.0.4-HXP-Projects/0.0.4.11-HXP-Shared-Library/hana-x-shared-library.md) | Code reuse documentation | 🔄 Expanding |
 
 ## 🔗 Document Traceability
 

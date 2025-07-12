@@ -1,4 +1,4 @@
-# Install vLLM from pip:
+# Install LLM serving framework from pip:
 pip install vllm
 
 # Load and run the model:

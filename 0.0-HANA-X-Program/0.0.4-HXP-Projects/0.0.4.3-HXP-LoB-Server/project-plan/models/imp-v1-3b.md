@@ -1,8 +1,9 @@
-# Install vLLM from pip:
-pip install vllm
+# Install AI model serving framework:
+pip install transformers torch
 
 # Load and run the model:
-vllm serve "MILVLG/imp-v1-3b"
+# Model: MILVLG/imp-v1-3b (Ultra-lightweight Agent)
+# Server configuration for HXP LoB Server
 
 # Call the server using curl:
 curl -X POST "http://localhost:8000/v1/completions" \

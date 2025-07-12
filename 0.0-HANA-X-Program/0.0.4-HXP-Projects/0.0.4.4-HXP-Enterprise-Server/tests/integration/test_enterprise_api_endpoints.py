@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from helpers.base_test_case import BaseEnterpriseIntegrationTestCase
 
 class TestEnterpriseAPIEndpoints(BaseEnterpriseIntegrationTestCase):
-    """Integration tests for enterprise vLLM API endpoints."""
+    """Integration tests for enterprise LLM framework API endpoints."""
     
     def setUp(self):
         """Set up enterprise API testing environment."""

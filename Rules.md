@@ -9,10 +9,10 @@
 ## Rule Group 1000: Task Initialization & Context
 
 - **Rule 1001 - Review Project Context:**  
-  Review /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Program/01-HXP-PRD.md.
+  Review /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Program/0.0.1-HXP-Program-Plan/0.1-HXP-PRD.md.
 
 - **Rule 1002 - Review Coding Standards:**  
-  Review /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Program/12-HXP-Governance/hx-coding-standards.md.
+  Review /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Program/0.0.0-HXP-Governance/hx-coding-standards.md.
 
 - **Rule 1003 - Acknowledge Monorepo Structure:**  
   Confirm understanding of the project structure.
@@ -28,7 +28,7 @@
   Place code in the correct project directory (service-specific vs. shared-library).
 
 - **Rule 2002 - Adhere to All Standards:**  
-  Follow all conventions in /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Program/12-HXP-Governance/hx-coding-standards.md.
+  Follow all conventions in /home/agent0/Citadel-Alpha-Infrastructure/0.0-HANA-X-Program/0.0.0-HXP-Governance/hx-coding-standards.md.
 
 - **Rule 2003 - Generate Unit Tests:**  
   Generate corresponding unit tests for new logic.
@@ -80,7 +80,7 @@
 
 - **Rule 5004 - Handle Privileged Commands Securely:**  
   - **Action:** execute sudo commands
-    When a command requires elevated privileges, generate the complete command prefixed with `sudo`.  Then, read password from this directory/file "\\wsl.localhost\Ubuntu-24.04\home\agent0\vLLM Installation\secrets-file.md", proceed with task.
+    When a command requires elevated privileges, generate the complete command prefixed with `sudo`.  Then, read password from this directory/file "\\wsl.localhost\Ubuntu-24.04\home\agent0\LLM Installation\secrets-file.md", proceed with task.
 
 ---
 

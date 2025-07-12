@@ -1,6 +1,6 @@
 # 📋 Task List (TL-LOB-001) - HANA-X Line of Business Server
 
-## Title: LoB Development vLLM Server Task List (hx-llm-server-02)
+## Title: LoB Development LLM Server Task List (hx-llm-server-02)
 
 **Document ID:** TL-LOB-001  
 **Version:** 1.0  
@@ -196,18 +196,18 @@ This task list details the development-focused deployment and operations for **h
 
 ---
 
-## ⚙️ Phase 2: Development vLLM Installation & Configuration
+## ⚙️ Phase 2: Development LLM Installation & Configuration
 
-### Task 2.1: Development vLLM Installation
-- **Objective**: Install vLLM with development optimizations
+### Task 2.1: Development LLM Installation
+- **Objective**: Install LLM with development optimizations
 - **Success Criteria**:
-  - vLLM installed with development model support
+  - LLM installed with development model support
   - Code generation optimization enabled
   - Multi-language model compatibility
   - Development debugging integration
 - **Dependencies**: Phase 1 Complete
 - **Estimated Duration**: 55 minutes
-- **Validation**: Development vLLM installation tests pass
+- **Validation**: Development LLM installation tests pass
 - **Status**: ❌ Not Started
 
 ### Task 2.2: Development API Configuration
@@ -282,8 +282,8 @@ This task list details the development-focused deployment and operations for **h
 - **Validation**: Development API extension tests pass
 - **Status**: ❌ Not Started
 
-### Task 2.8: Development vLLM Validation
-- **Objective**: Comprehensive development vLLM validation
+### Task 2.8: Development LLM Validation
+- **Objective**: Comprehensive development LLM validation
 - **Success Criteria**:
   - Development functionality validated
   - Code generation performance confirmed
@@ -291,7 +291,7 @@ This task list details the development-focused deployment and operations for **h
   - Development workflow requirements satisfied
 - **Dependencies**: Tasks 2.1-2.7
 - **Estimated Duration**: 40 minutes
-- **Validation**: Development vLLM validation suite passes
+- **Validation**: Development LLM validation suite passes
 - **Status**: ❌ Not Started
 
 ---

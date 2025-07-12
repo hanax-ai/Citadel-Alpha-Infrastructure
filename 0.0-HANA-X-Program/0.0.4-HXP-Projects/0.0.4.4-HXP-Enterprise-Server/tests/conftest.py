@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Global pytest configuration and fixtures for HANA-X-Enterprise-Server vLLM test suite.
+Global pytest configuration and fixtures for HANA-X-Enterprise-Server LLM framework test suite.
 Server: hx-llm-server-01 (192.168.10.29:8000)
 Focus: Enterprise production models and high-performance inference
 """
@@ -177,7 +177,7 @@ def enterprise_model_files(enterprise_workspace):
 
 @pytest.fixture
 def enterprise_vllm_service():
-    """Mock enterprise vLLM service with production features."""
+    """Mock enterprise LLM framework service with production features."""
     with patch('requests.get') as mock_get, \
          patch('requests.post') as mock_post:
         

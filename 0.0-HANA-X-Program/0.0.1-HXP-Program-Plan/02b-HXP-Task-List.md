@@ -273,7 +273,7 @@ Deploy Qdrant vector database for AI embeddings and similarity search
 
 ### LLM Server Objective
 
-Deploy primary vLLM inference engine with specialized AI models
+Deploy primary LLM inference engine with specialized AI models
 
 ---
 
@@ -297,13 +297,13 @@ Deploy primary vLLM inference engine with specialized AI models
 
 ## AI Model Deployment
 
-### Task 2.3.2: vLLM Engine Installation
+### Task 2.3.2: LLM Engine Installation
 
-**Objective:** Install vLLM inference engine with OpenAI-compatible API
+**Objective:** Install LLM inference engine with OpenAI-compatible API
 
 **Success Criteria:**
 
-- vLLM server running and accepting requests
+- LLM server running and accepting requests
 - API accessible via HTTP interface
 - Logs and health endpoints functional
 

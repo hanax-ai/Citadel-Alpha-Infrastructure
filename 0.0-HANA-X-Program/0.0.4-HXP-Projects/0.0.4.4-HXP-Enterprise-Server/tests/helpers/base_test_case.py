@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Base test case class for HANA-X-Enterprise-Server vLLM test suite.
+Base test case class for HANA-X-Enterprise-Server LLM framework test suite.
 Implements FASTT principles with enterprise-specific functionality.
 """
 

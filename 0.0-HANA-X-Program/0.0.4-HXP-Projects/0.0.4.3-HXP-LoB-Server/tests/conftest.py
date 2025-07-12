@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Global pytest configuration and fixtures for HANA-X-LoB-Server vLLM test suite.
+Global pytest configuration and fixtures for HANA-X-LoB-Server LLM framework test suite.
 Server: hx-llm-server-02 (192.168.10.28:8001)
 Focus: Line of Business, Development, and Coding-specialized models
 """
@@ -193,7 +193,7 @@ def lob_model_files(lob_workspace):
 
 @pytest.fixture
 def lob_vllm_service():
-    """Mock LoB vLLM service with development features."""
+    """Mock LoB LLM framework service with development features."""
     with patch('requests.get') as mock_get, \
          patch('requests.post') as mock_post:
         

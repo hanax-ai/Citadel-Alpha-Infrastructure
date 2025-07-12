@@ -27,8 +27,8 @@ graph TB
         end
         
         subgraph "AI Processing Layer"
-            LLM1["🧠 hx-llm-server-01<br/>192.168.10.29<br/>vLLM Primary<br/>OpenAI API"]
-            LLM2["🧠 hx-llm-server-02<br/>192.168.10.28<br/>vLLM Secondary<br/>Load Balancing"]
+            LLM1["🧠 hx-llm-server-01<br/>192.168.10.29<br/>LLM Primary<br/>OpenAI API"]
+            LLM2["🧠 hx-llm-server-02<br/>192.168.10.28<br/>LLM Secondary<br/>Load Balancing"]
         end
         
         subgraph "Data Layer"
