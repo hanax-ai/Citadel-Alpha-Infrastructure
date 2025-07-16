@@ -1,0 +1,236 @@
+syntax = "proto3";
+
+package hana_x_vector;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// Vector Database Service Definition
+service VectorDatabaseService {
+    // Vector Operations
+    rpc SearchVectors(VectorSearchRequest) returns (VectorSearchResponse);
+    rpc GetVector(GetVectorRequest) returns (VectorResponse);
+    rpc InsertVector(InsertVectorRequest) returns (OperationResponse);
+    rpc UpdateVector(UpdateVectorRequest) returns (OperationResponse);
+    rpc DeleteVector(DeleteVectorRequest) returns (OperationResponse);
+    rpc BatchInsertVectors(BatchInsertRequest) returns (BatchOperationResponse);
+    
+    // Embedding Operations
+    rpc GenerateEmbeddings(EmbeddingRequest) returns (EmbeddingResponse);
+    
+    // Collection Operations
+    rpc CreateCollection(CreateCollectionRequest) returns (OperationResponse);
+    rpc DeleteCollection(DeleteCollectionRequest) returns (OperationResponse);
+    rpc ListCollections(google.protobuf.Empty) returns (CollectionListResponse);
+    rpc GetCollectionInfo(GetCollectionRequest) returns (CollectionInfoResponse);
+    
+    // External Model Operations
+    rpc CallExternalModel(ExternalModelRequest) returns (ExternalModelResponse);
+    rpc ListExternalModels(google.protobuf.Empty) returns (ExternalModelListResponse);
+    rpc GetModelInfo(GetModelRequest) returns (ExternalModelInfoResponse);
+    
+    // Health and Status
+    rpc HealthCheck(google.protobuf.Empty) returns (HealthResponse);
+    rpc GetSystemStatus(google.protobuf.Empty) returns (SystemStatusResponse);
+}
+
+// Vector Messages
+message Vector {
+    string id = 1;
+    repeated float embedding = 2;
+    string metadata = 3;  // JSON string
+    string collection = 4;
+    float score = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
+}
+
+message VectorSearchRequest {
+    repeated float query_vector = 1;
+    string collection = 2;
+    int32 limit = 3;
+    float score_threshold = 4;
+    bool include_vectors = 5;
+    bool include_metadata = 6;
+    string filter_conditions = 7;  // JSON string
+}
+
+message VectorSearchResponse {
+    repeated Vector vectors = 1;
+    int32 total_count = 2;
+    float query_time_ms = 3;
+    string collection = 4;
+    google.protobuf.Timestamp timestamp = 5;
+    bool success = 6;
+    string error_message = 7;
+}
+
+message GetVectorRequest {
+    string vector_id = 1;
+    string collection = 2;
+}
+
+message VectorResponse {
+    Vector vector = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message InsertVectorRequest {
+    Vector vector = 1;
+    string collection = 2;
+}
+
+message UpdateVectorRequest {
+    Vector vector = 1;
+    string collection = 2;
+}
+
+message DeleteVectorRequest {
+    string vector_id = 1;
+    string collection = 2;
+}
+
+message BatchInsertRequest {
+    repeated Vector vectors = 1;
+    string collection = 2;
+    int32 batch_size = 3;
+}
+
+message BatchOperationResponse {
+    int32 processed_count = 1;
+    int32 failed_count = 2;
+    repeated string error_messages = 3;
+    float processing_time_ms = 4;
+    bool success = 5;
+}
+
+// Embedding Messages
+message EmbeddingRequest {
+    repeated string text = 1;
+    string model_name = 2;
+    bool normalize = 3;
+    int32 batch_size = 4;
+    int32 max_length = 5;
+}
+
+message EmbeddingResponse {
+    repeated EmbeddingVector embeddings = 1;
+    string model_name = 2;
+    int32 dimension = 3;
+    float processing_time_ms = 4;
+    int32 token_count = 5;
+    google.protobuf.Timestamp timestamp = 6;
+    bool success = 7;
+    string error_message = 8;
+}
+
+message EmbeddingVector {
+    repeated float values = 1;
+}
+
+// Collection Messages
+message CreateCollectionRequest {
+    string name = 1;
+    int32 dimension = 2;
+    string metadata = 3;  // JSON string
+}
+
+message DeleteCollectionRequest {
+    string name = 1;
+}
+
+message GetCollectionRequest {
+    string name = 1;
+}
+
+message CollectionInfo {
+    string name = 1;
+    int32 dimension = 2;
+    int32 vector_count = 3;
+    google.protobuf.Timestamp created_at = 4;
+    google.protobuf.Timestamp updated_at = 5;
+    string metadata = 6;  // JSON string
+}
+
+message CollectionListResponse {
+    repeated CollectionInfo collections = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message CollectionInfoResponse {
+    CollectionInfo collection = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+// External Model Messages
+message ExternalModelRequest {
+    string model_id = 1;
+    string request_data = 2;  // JSON string
+}
+
+message ExternalModelResponse {
+    string model_id = 1;
+    string request_id = 2;
+    string response_data = 3;  // JSON string
+    bool success = 4;
+    string error_message = 5;
+    float processing_time_ms = 6;
+    int32 tokens_used = 7;
+    bool cached = 8;
+    google.protobuf.Timestamp timestamp = 9;
+}
+
+message ExternalModelInfo {
+    string id = 1;
+    string name = 2;
+    string model_type = 3;
+    string api_endpoint = 4;
+    repeated string capabilities = 5;
+    string integration_pattern = 6;
+    bool is_active = 7;
+    google.protobuf.Timestamp created_at = 8;
+}
+
+message ExternalModelListResponse {
+    repeated ExternalModelInfo models = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message GetModelRequest {
+    string model_id = 1;
+}
+
+message ExternalModelInfoResponse {
+    ExternalModelInfo model = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+// Common Messages
+message OperationResponse {
+    bool success = 1;
+    string message = 2;
+    google.protobuf.Timestamp timestamp = 3;
+}
+
+message HealthResponse {
+    string status = 1;
+    string message = 2;
+    google.protobuf.Timestamp timestamp = 3;
+    string details = 4;  // JSON string
+}
+
+message SystemStatusResponse {
+    string status = 1;
+    string version = 2;
+    int32 active_connections = 3;
+    float cpu_usage = 4;
+    float memory_usage = 5;
+    float disk_usage = 6;
+    google.protobuf.Timestamp timestamp = 7;
+    string details = 8;  // JSON string
+}
