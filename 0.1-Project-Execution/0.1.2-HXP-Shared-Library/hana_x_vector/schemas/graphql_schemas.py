@@ -411,31 +411,12 @@ class JSON:
 
 
 # Schema extensions for custom directives
-@strawberry.directive(
-    locations=[strawberry.directive.Location.FIELD_DEFINITION],
-    description="Mark field as requiring authentication"
-)
-def auth_required() -> None:
-    """Authentication required directive."""
-    pass
+# Note: Custom directives can be added here when needed
+# For now, authentication will be handled at the API Gateway level
 
 
-@strawberry.directive(
-    locations=[strawberry.directive.Location.FIELD_DEFINITION],
-    description="Mark field as deprecated"
-)
-def deprecated(reason: str) -> None:
-    """Deprecation directive."""
-    pass
-
-
-@strawberry.directive(
-    locations=[strawberry.directive.Location.FIELD_DEFINITION],
-    description="Rate limit directive"
-)
-def rate_limit(max_requests: int, window: int) -> None:
-    """Rate limiting directive."""
-    pass
+# Directives removed to avoid import issues with strawberry.directive.Location
+# These can be re-implemented when needed using the correct Strawberry GraphQL API
 
 
 # Schema validation utilities
