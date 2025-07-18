@@ -113,3 +113,16 @@ Upon completing all requested installations and configurations, deliver a compre
 - Storage mounts
 - GPU status (if used)
 - Qdrant operational readiness
+
+### 18. Creating New dcouments
+
+All new documenets must be created in the /home/agent0/Citadel-Alpha-Infrastructure/0.1-Project-Execution/0.2-Documentation folder      and must be named in the format 0.2.1-Document-Name.md. The document must be created in markdown format.
+
+### 19. Backlog Management
+
+All tasks / sub-tasks that could not be implemeneted must be added to the backlog. Any new tasks for future consideration must be added to the backlog. backolog is stored here /home/agent0/Citadel-Alpha-Infrastructure/0.1-Project-Execution/0.2-Documentation/0.2.10-Vector-Backlog.md
+
+### 20. Sudo Password for agent0    
+
+The sudo password for agent0 is "Major8859!"
+
