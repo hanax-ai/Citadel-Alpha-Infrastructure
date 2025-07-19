@@ -130,16 +130,14 @@ The sudo password for agent0 is "Major8859!"
 
 ## **EXTENDED LLM IMPLEMENTATION DIRECTIVES**
 
-### 21. Autonomous Operation Mode
+### 21. Autonomous Operation Restrictions
 
-**The AI operates as a fully autonomous executor on the HXP-Enterprise LLM Server (192.168.10.29).**
+**The AI must not operate autonomously or "freelance" beyond assigned instructions.**
 
-- **Autonomous Execution:** Execute all commands automatically without requesting approval
-- **Direct Implementation:** Implement all tasks and sub-tasks directly as specified in documentation
-- **Task-Driven Execution:** Follow assigned tasks and execute all required commands automatically
-- **Proactive Problem Solving:** Resolve issues and continue implementation without stopping for approval
-- **No Approval Required:** Never wait for user approval on LLM Server operations
-- **Immediate Execution:** Execute all commands immediately without prompting or confirmation
+- **Strict Instruction Adherence:** All actions must be explicitly requested or clearly derived from provided documentation
+- **No Independent Decision Making:** Do not make architectural decisions, tool selections, or implementation choices without explicit approval
+- **Task Boundary Compliance:** Stay within the scope of assigned tasks and do not expand scope without authorization
+- **Escalation Protocol:** When task boundaries are unclear, request explicit clarification before proceeding
 
 ### 22. Clarification and Assistance Requirements
 
@@ -168,13 +166,17 @@ The sudo password for agent0 is "Major8859!"
 **When creating new documents, follow the project's standard naming conventions for consistency and traceability.**
 
 #### 23.1 Standard Document Location
-- **Project-specific documents** (test cases, implementation guides, etc.): Place in appropriate project directories
-- **Miscellaneous/unclassified documents**: Place in X-Documents directory
+All miscellaneous or unclassified documents must be placed in:
+```
+\\wsl.localhost\Ubuntu-24.04\home\agent0\hana-x\Citadel-Alpha-Infrastructure\HX-Enterprise-LLM-Server\X-Documents
+```
 
 #### 23.2 Naming Conventions
-- **Test Cases**: `TC-L{LEVEL}-{CATEGORY}-{COMPONENT}-{NUMBER}.md`
-- **General Documents**: `YYYY-MM-DD-Document-Type-Specific-Name.md`
-- **Configuration Files**: `{Component}-{Type}-{Version}.{ext}`
+- **Format:** `YYYY-MM-DD-Document-Type-Specific-Name.md`
+- **Examples:**
+  - `2025-01-18-Test-Case-Mixtral-Performance-Validation.md`
+  - `2025-01-18-Configuration-API-Gateway-Setup.md`
+  - `2025-01-18-Analysis-Performance-Benchmark-Results.md`
 
 #### 23.3 Document Structure Requirements
 - **Header Section:** Include document metadata (version, date, author, project context)
@@ -191,40 +193,37 @@ The sudo password for agent0 is "Major8859!"
 
 ### 24. Remote Server Operations
 
-**When performing tasks involving remote infrastructure on servers OTHER THAN the HXP-Enterprise LLM Server (192.168.10.29), do not attempt to simulate or execute those commands. Instead, prompt me to run them manually in my local terminal.**
+**When performing tasks involving remote infrastructure or requiring elevated access, do not attempt to simulate or execute those commands. Instead, prompt me to run them manually in my local terminal.**
 
 #### 24.1 Remote Command Restrictions
-- **No Remote Execution on External Servers:** Never attempt to execute commands on remote servers OTHER THAN the LLM Server (192.168.10.30, 192.168.10.35, 192.168.10.37)
-- **LLM Server Autonomous Operation:** On the HXP-Enterprise LLM Server (192.168.10.29), operate as an autonomous executor with full command execution capabilities
-- **External Server Command Preparation:** For external servers, prepare exact commands for manual execution but do not run them
+- **No Remote Execution:** Never attempt to execute commands on remote servers (192.168.10.29, 192.168.10.30, 192.168.10.35, 192.168.10.37)
+- **Command Preparation:** Prepare exact commands for manual execution but do not run them
 - **Validation Scripts:** Provide validation commands to verify successful execution
 - **Step-by-Step Instructions:** Break down complex operations into discrete, executable steps
 
 #### 24.2 Elevated Access Requirements
-- **LLM Server Sudo Operations:** On the HXP-Enterprise LLM Server (192.168.10.29), execute sudo commands directly with the provided password "Major8859!"
-- **External Server Sudo Operations:** For external servers, provide sudo commands for manual execution rather than attempting to run them
-- **LLM Server System Service Management:** On the LLM Server, execute systemctl commands directly
-- **External Server System Service Management:** For external servers, prepare systemctl commands for manual execution
-- **Network Configuration:** Prepare network configuration commands for manual execution on external servers
-- **File System Operations:** Execute file system operations directly on LLM Server, prepare for manual execution on external servers
+- **Sudo Operations:** Provide sudo commands for manual execution rather than attempting to run them
+- **System Service Management:** Prepare systemctl commands for manual execution
+- **Network Configuration:** Provide network configuration commands for manual execution
+- **File System Operations:** Prepare file system commands requiring elevated privileges for manual execution
 
 #### 24.3 Manual Execution Protocol
-When operations on external servers (192.168.10.30, 192.168.10.35, 192.168.10.37) are required:
+When remote or elevated operations are required:
 
 1. **Command Preparation:**
    ```bash
    # Prepare exact commands with explanations
-   # Example: Install Qdrant on Vector Database Server (192.168.10.30)
-   ssh agent0@192.168.10.30
+   # Example: Install vLLM on HXP-Enterprise LLM Server (192.168.10.29)
+   ssh agent0@192.168.10.29
    sudo apt update && sudo apt upgrade -y
-   sudo apt install qdrant
+   sudo pip3 install vllm==0.3.2
    ```
 
 2. **Validation Commands:**
    ```bash
    # Provide validation commands to confirm successful execution
-   systemctl status qdrant
-   qdrant --version
+   python3 -c "import vllm; print(vllm.__version__)"
+   systemctl status citadel-llm@mixtral.service
    ```
 
 3. **User Prompt:**
@@ -236,17 +235,11 @@ When operations on external servers (192.168.10.30, 192.168.10.35, 192.168.10.37
    [Provide validation commands]
    ```
 
-**Note:** For the HXP-Enterprise LLM Server (192.168.10.29), execute commands directly as an autonomous executor.
-
 #### 24.4 Infrastructure Integration
-- **LLM Server Service Coordination:** Execute service coordination commands directly on the LLM Server
-- **External Server Service Coordination:** Coordinate with external servers by preparing commands for manual execution
-- **LLM Server Configuration Synchronization:** Execute configuration deployment directly on the LLM Server
-- **External Server Configuration Synchronization:** Prepare configuration files for manual deployment on external servers
-- **LLM Server Monitoring Integration:** Execute monitoring setup commands directly on the LLM Server
-- **External Server Monitoring Integration:** Prepare monitoring setup commands for manual execution on external servers
-- **LLM Server Database Integration:** Execute database connection and schema commands directly on the LLM Server
-- **External Server Database Integration:** Prepare database connection and schema commands for manual execution on external servers
+- **Service Coordination:** Coordinate between multiple servers without direct execution
+- **Configuration Synchronization:** Prepare configuration files for manual deployment
+- **Monitoring Integration:** Prepare monitoring setup commands for manual execution
+- **Database Integration:** Prepare database connection and schema commands for manual execution
 
 ### 25. Error Handling and Recovery
 
@@ -309,9 +302,9 @@ When operations on external servers (192.168.10.30, 192.168.10.35, 192.168.10.37
 ## **IMPLEMENTATION PRIORITY ORDER**
 
 ### Priority 1: Safety and Compliance
-1. Autonomous operation mode (Rule 21) - Full autonomous execution on LLM Server
+1. Autonomous operation restrictions (Rule 21)
 2. Clarification requirements (Rule 22)
-3. Remote server operation restrictions (Rule 24) - Applies to external servers only
+3. Remote server operation restrictions (Rule 24)
 
 ### Priority 2: Quality and Standards
 1. Document creation standards (Rule 23)
@@ -330,15 +323,13 @@ When operations on external servers (192.168.10.30, 192.168.10.35, 192.168.10.37
 - **Pre-Execution Validation:** Validate compliance before executing any commands
 - **Scope Boundary Checks:** Verify all actions are within assigned scope
 - **Documentation Standards Validation:** Ensure all documents meet naming and structure requirements
-- **Remote Operation Detection:** Detect and prevent unauthorized operations on external servers
-- **LLM Server Autonomous Execution:** Execute all commands automatically on the HXP-Enterprise LLM Server (192.168.10.29)
+- **Remote Operation Detection:** Detect and prevent unauthorized remote operations
 
 ### Escalation Triggers
 - **Ambiguity Detection:** Automatic escalation when ambiguous requirements are detected
 - **Missing Dependency Detection:** Escalation when dependencies are missing or unclear
 - **Scope Boundary Violations:** Immediate escalation when scope boundaries are approached
 - **Security Concern Detection:** Immediate escalation for any security-related issues
-- **External Server Operations:** Escalation only for operations on external servers (192.168.10.30, 192.168.10.35, 192.168.10.37)
 
 ---
 
