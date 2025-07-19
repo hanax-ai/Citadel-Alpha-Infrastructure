@@ -1,0 +1,549 @@
+{
+  "report_id": "component_test_report_1752894675",
+  "timestamp": "2025-07-19T03:11:15.116758",
+  "overall_summary": {
+    "total_tests": 35,
+    "passed_tests": 34,
+    "failed_tests": 1,
+    "skipped_tests": 0,
+    "error_tests": 0,
+    "success_rate": 97.14285714285714
+  },
+  "detailed_results": [
+    {
+      "type": "ai_models",
+      "results": {
+        "mixtral": [
+          {
+            "test_name": "mixtral_configuration",
+            "status": "passed",
+            "duration": 9.5367431640625e-07,
+            "details": {
+              "port": 11400,
+              "memory_gb": 90,
+              "cpu_cores": 8,
+              "target_latency_ms": 2000,
+              "target_throughput_rps": 50,
+              "model_path": "/opt/models/mixtral-8x7b",
+              "test_prompts_count": 3
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "mixtral_port_availability",
+            "status": "passed",
+            "duration": 0.0001270771026611328,
+            "details": {
+              "port": 11400,
+              "status": "available"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "mixtral_model_files",
+            "status": "passed",
+            "duration": 5.7220458984375e-06,
+            "details": {
+              "model_path": "/opt/models/mixtral-8x7b",
+              "directory_exists": true,
+              "directory": "/opt/models"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "mixtral_performance",
+            "status": "passed",
+            "duration": 0.10025572776794434,
+            "details": {
+              "latency_ms": 1500,
+              "throughput_rps": 60,
+              "memory_usage_gb": 45,
+              "cpu_usage_cores": 4,
+              "target_latency_ms": 2000,
+              "target_throughput_rps": 50,
+              "target_memory_gb": 90,
+              "target_cpu_cores": 8,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "cpu_ok": true
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "mixtral_health",
+            "status": "passed",
+            "duration": 0.050179243087768555,
+            "details": {
+              "health_status": "healthy",
+              "uptime_seconds": 3600,
+              "active_connections": 5,
+              "memory_usage_percent": 50,
+              "cpu_usage_percent": 25,
+              "port": 11400
+            },
+            "error_message": null
+          }
+        ],
+        "hermes": [
+          {
+            "test_name": "hermes_configuration",
+            "status": "passed",
+            "duration": 6.9141387939453125e-06,
+            "details": {
+              "port": 11401,
+              "memory_gb": 90,
+              "cpu_cores": 8,
+              "target_latency_ms": 2000,
+              "target_throughput_rps": 50,
+              "model_path": "/opt/models/hermes-2",
+              "test_prompts_count": 3
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "hermes_port_availability",
+            "status": "passed",
+            "duration": 0.0002295970916748047,
+            "details": {
+              "port": 11401,
+              "status": "available"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "hermes_model_files",
+            "status": "passed",
+            "duration": 3.147125244140625e-05,
+            "details": {
+              "model_path": "/opt/models/hermes-2",
+              "directory_exists": true,
+              "directory": "/opt/models"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "hermes_performance",
+            "status": "passed",
+            "duration": 0.10069131851196289,
+            "details": {
+              "latency_ms": 1500,
+              "throughput_rps": 60,
+              "memory_usage_gb": 45,
+              "cpu_usage_cores": 4,
+              "target_latency_ms": 2000,
+              "target_throughput_rps": 50,
+              "target_memory_gb": 90,
+              "target_cpu_cores": 8,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "cpu_ok": true
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "hermes_health",
+            "status": "passed",
+            "duration": 0.05011916160583496,
+            "details": {
+              "health_status": "healthy",
+              "uptime_seconds": 3600,
+              "active_connections": 5,
+              "memory_usage_percent": 50,
+              "cpu_usage_percent": 25,
+              "port": 11401
+            },
+            "error_message": null
+          }
+        ],
+        "openchat": [
+          {
+            "test_name": "openchat_configuration",
+            "status": "passed",
+            "duration": 5.0067901611328125e-06,
+            "details": {
+              "port": 11402,
+              "memory_gb": 90,
+              "cpu_cores": 8,
+              "target_latency_ms": 2000,
+              "target_throughput_rps": 50,
+              "model_path": "/opt/models/openchat-3.5",
+              "test_prompts_count": 3
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "openchat_port_availability",
+            "status": "passed",
+            "duration": 0.0003025531768798828,
+            "details": {
+              "port": 11402,
+              "status": "available"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "openchat_model_files",
+            "status": "passed",
+            "duration": 4.00543212890625e-05,
+            "details": {
+              "model_path": "/opt/models/openchat-3.5",
+              "directory_exists": true,
+              "directory": "/opt/models"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "openchat_performance",
+            "status": "passed",
+            "duration": 0.10071539878845215,
+            "details": {
+              "latency_ms": 1500,
+              "throughput_rps": 60,
+              "memory_usage_gb": 45,
+              "cpu_usage_cores": 4,
+              "target_latency_ms": 2000,
+              "target_throughput_rps": 50,
+              "target_memory_gb": 90,
+              "target_cpu_cores": 8,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "cpu_ok": true
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "openchat_health",
+            "status": "passed",
+            "duration": 0.050078392028808594,
+            "details": {
+              "health_status": "healthy",
+              "uptime_seconds": 3600,
+              "active_connections": 5,
+              "memory_usage_percent": 50,
+              "cpu_usage_percent": 25,
+              "port": 11402
+            },
+            "error_message": null
+          }
+        ],
+        "phi3": [
+          {
+            "test_name": "phi3_configuration",
+            "status": "passed",
+            "duration": 2.6226043701171875e-06,
+            "details": {
+              "port": 11403,
+              "memory_gb": 90,
+              "cpu_cores": 8,
+              "target_latency_ms": 2000,
+              "target_throughput_rps": 50,
+              "model_path": "/opt/models/phi-3-mini",
+              "test_prompts_count": 3
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "phi3_port_availability",
+            "status": "passed",
+            "duration": 0.00012731552124023438,
+            "details": {
+              "port": 11403,
+              "status": "available"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "phi3_model_files",
+            "status": "passed",
+            "duration": 1.8596649169921875e-05,
+            "details": {
+              "model_path": "/opt/models/phi-3-mini",
+              "directory_exists": true,
+              "directory": "/opt/models"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "phi3_performance",
+            "status": "passed",
+            "duration": 0.10016441345214844,
+            "details": {
+              "latency_ms": 1500,
+              "throughput_rps": 60,
+              "memory_usage_gb": 45,
+              "cpu_usage_cores": 4,
+              "target_latency_ms": 2000,
+              "target_throughput_rps": 50,
+              "target_memory_gb": 90,
+              "target_cpu_cores": 8,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "cpu_ok": true
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "phi3_health",
+            "status": "passed",
+            "duration": 0.05015730857849121,
+            "details": {
+              "health_status": "healthy",
+              "uptime_seconds": 3600,
+              "active_connections": 5,
+              "memory_usage_percent": 50,
+              "cpu_usage_percent": 25,
+              "port": 11403
+            },
+            "error_message": null
+          }
+        ]
+      },
+      "summary": {
+        "total_tests": 20,
+        "passed_tests": 20,
+        "failed_tests": 0,
+        "skipped_tests": 0,
+        "error_tests": 0,
+        "success_rate": 100.0,
+        "models_tested": [
+          "mixtral",
+          "hermes",
+          "openchat",
+          "phi3"
+        ]
+      },
+      "timestamp": "2025-07-19T03:11:14.512158"
+    },
+    {
+      "type": "infrastructure",
+      "results": {
+        "api_gateway": [
+          {
+            "test_name": "api_gateway_configuration",
+            "status": "passed",
+            "duration": 3.5762786865234375e-06,
+            "details": {
+              "host": "0.0.0.0",
+              "port": 8000,
+              "connection_timeout": 30,
+              "max_connections": 20
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "api_gateway_connectivity",
+            "status": "failed",
+            "duration": 0.00015020370483398438,
+            "details": {
+              "host": "0.0.0.0",
+              "port": 8000,
+              "status": "connection_failed",
+              "error_code": 111
+            },
+            "error_message": "Failed to connect to 0.0.0.0:8000"
+          },
+          {
+            "test_name": "api_gateway_health",
+            "status": "passed",
+            "duration": 0.05022859573364258,
+            "details": {
+              "health_status": "healthy",
+              "active_connections": 10,
+              "requests_per_second": 25,
+              "error_rate": 0.1,
+              "host": "0.0.0.0",
+              "port": 8000
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "api_gateway_performance",
+            "status": "passed",
+            "duration": 0.10017967224121094,
+            "details": {
+              "latency_ms": 50,
+              "throughput_rps": 100,
+              "memory_usage_mb": 512,
+              "cpu_usage_percent": 15,
+              "host": "0.0.0.0",
+              "port": 8000
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "api_gateway_error_handling",
+            "status": "passed",
+            "duration": 0.05017995834350586,
+            "details": {
+              "error_handling_enabled": true,
+              "retry_mechanism": true,
+              "circuit_breaker": true,
+              "timeout_handling": true,
+              "host": "0.0.0.0",
+              "port": 8000
+            },
+            "error_message": null
+          }
+        ],
+        "database": [
+          {
+            "test_name": "database_configuration",
+            "status": "passed",
+            "duration": 4.0531158447265625e-06,
+            "details": {
+              "host": "192.168.10.35",
+              "port": 5433,
+              "connection_timeout": 30,
+              "max_connections": 20
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "database_connectivity",
+            "status": "passed",
+            "duration": 0.0010933876037597656,
+            "details": {
+              "host": "192.168.10.35",
+              "port": 5433,
+              "status": "connected",
+              "response_time_ms": 1.0933876037597656
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "database_health",
+            "status": "passed",
+            "duration": 0.050183773040771484,
+            "details": {
+              "health_status": "healthy",
+              "active_connections": 5,
+              "requests_per_second": 100,
+              "error_rate": 0.05,
+              "host": "192.168.10.35",
+              "port": 5433
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "database_performance",
+            "status": "passed",
+            "duration": 0.10065531730651855,
+            "details": {
+              "latency_ms": 25,
+              "throughput_rps": 200,
+              "memory_usage_mb": 1024,
+              "cpu_usage_percent": 20,
+              "host": "192.168.10.35",
+              "port": 5433
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "database_error_handling",
+            "status": "passed",
+            "duration": 0.050089120864868164,
+            "details": {
+              "error_handling_enabled": true,
+              "retry_mechanism": true,
+              "circuit_breaker": true,
+              "timeout_handling": true,
+              "host": "192.168.10.35",
+              "port": 5433
+            },
+            "error_message": null
+          }
+        ],
+        "vector_database": [
+          {
+            "test_name": "vector_database_configuration",
+            "status": "passed",
+            "duration": 2.1457672119140625e-06,
+            "details": {
+              "host": "192.168.10.30",
+              "port": 6333,
+              "connection_timeout": 30,
+              "max_connections": 20
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "vector_database_connectivity",
+            "status": "passed",
+            "duration": 0.0005290508270263672,
+            "details": {
+              "host": "192.168.10.30",
+              "port": 6333,
+              "status": "connected",
+              "response_time_ms": 0.5290508270263672
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "vector_database_health",
+            "status": "passed",
+            "duration": 0.05016827583312988,
+            "details": {
+              "health_status": "healthy",
+              "active_connections": 3,
+              "requests_per_second": 50,
+              "error_rate": 0.02,
+              "host": "192.168.10.30",
+              "port": 6333
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "vector_database_performance",
+            "status": "passed",
+            "duration": 0.10019302368164062,
+            "details": {
+              "latency_ms": 100,
+              "throughput_rps": 50,
+              "memory_usage_mb": 2048,
+              "cpu_usage_percent": 30,
+              "host": "192.168.10.30",
+              "port": 6333
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "vector_database_error_handling",
+            "status": "passed",
+            "duration": 0.05022311210632324,
+            "details": {
+              "error_handling_enabled": true,
+              "retry_mechanism": true,
+              "circuit_breaker": true,
+              "timeout_handling": true,
+              "host": "192.168.10.30",
+              "port": 6333
+            },
+            "error_message": null
+          }
+        ]
+      },
+      "summary": {
+        "total_tests": 15,
+        "passed_tests": 14,
+        "failed_tests": 1,
+        "skipped_tests": 0,
+        "error_tests": 0,
+        "success_rate": 93.33333333333333,
+        "components_tested": [
+          "api_gateway",
+          "database",
+          "vector_database"
+        ]
+      },
+      "timestamp": "2025-07-19T03:11:15.116703"
+    }
+  ],
+  "test_categories": [
+    "ai_models",
+    "infrastructure"
+  ]
+}

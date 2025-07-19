@@ -1,0 +1,72 @@
+component_tests:
+  ai_models:
+    mixtral:
+      port: 11400
+      memory_limit_gb: 90
+      cpu_cores: 8
+      target_latency_ms: 2000
+      target_throughput_rps: 50
+      model_path: "/opt/models/mixtral-8x7b"
+      test_prompts:
+        - "Test prompt for performance validation"
+        - "Complex reasoning test prompt"
+        - "Code generation test prompt"
+    
+    hermes:
+      port: 11401
+      memory_limit_gb: 90
+      cpu_cores: 8
+      target_latency_ms: 2000
+      target_throughput_rps: 50
+      model_path: "/opt/models/hermes-2"
+      test_prompts:
+        - "Test prompt for performance validation"
+        - "Complex reasoning test prompt"
+        - "Code generation test prompt"
+    
+    openchat:
+      port: 11402
+      memory_limit_gb: 90
+      cpu_cores: 8
+      target_latency_ms: 2000
+      target_throughput_rps: 50
+      model_path: "/opt/models/openchat-3.5"
+      test_prompts:
+        - "Test prompt for performance validation"
+        - "Complex reasoning test prompt"
+        - "Code generation test prompt"
+    
+    phi3:
+      port: 11403
+      memory_limit_gb: 90
+      cpu_cores: 8
+      target_latency_ms: 2000
+      target_throughput_rps: 50
+      model_path: "/opt/models/phi-3-mini"
+      test_prompts:
+        - "Test prompt for performance validation"
+        - "Complex reasoning test prompt"
+        - "Code generation test prompt"
+  
+  infrastructure:
+    api_gateway:
+      port: 8000
+      host: "0.0.0.0"
+      workers: 4
+      health_check_interval: 30
+      rate_limiting_enabled: true
+    
+    database:
+      host: "192.168.10.35"
+      port: 5433
+      database: "citadel_ai"
+      user: "citadel_admin"
+      connection_timeout: 30
+      max_connections: 20
+    
+    vector_database:
+      host: "192.168.10.30"
+      port: 6333
+      grpc_port: 6334
+      connection_timeout: 30
+      max_connections: 20 

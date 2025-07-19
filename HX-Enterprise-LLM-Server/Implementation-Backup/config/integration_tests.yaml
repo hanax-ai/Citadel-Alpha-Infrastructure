@@ -1,0 +1,104 @@
+integration_tests:
+  cross_service:
+    api_gateway_to_models:
+      enabled: true
+      timeout_seconds: 30
+      retry_attempts: 3
+      concurrent_requests: 10
+      test_scenarios:
+        - "basic_routing"
+        - "load_balancing"
+        - "error_handling"
+        - "performance_validation"
+    
+    model_to_database:
+      enabled: true
+      timeout_seconds: 30
+      retry_attempts: 3
+      test_scenarios:
+        - "data_persistence"
+        - "query_performance"
+        - "connection_pooling"
+        - "transaction_handling"
+    
+    model_to_vector_database:
+      enabled: true
+      timeout_seconds: 30
+      retry_attempts: 3
+      test_scenarios:
+        - "vector_storage"
+        - "similarity_search"
+        - "index_management"
+        - "performance_validation"
+  
+  external_apis:
+    database_connectivity:
+      host: "192.168.10.35"
+      port: 5433
+      database: "citadel_ai"
+      user: "citadel_admin"
+      connection_timeout: 30
+      max_connections: 20
+      test_scenarios:
+        - "connection_establishment"
+        - "query_execution"
+        - "transaction_handling"
+        - "connection_pooling"
+    
+    vector_database_connectivity:
+      host: "192.168.10.30"
+      port: 6333
+      grpc_port: 6334
+      connection_timeout: 30
+      max_connections: 20
+      test_scenarios:
+        - "connection_establishment"
+        - "collection_management"
+        - "vector_operations"
+        - "performance_validation"
+    
+    metrics_connectivity:
+      host: "192.168.10.37"
+      prometheus_port: 9090
+      grafana_port: 3000
+      alertmanager_port: 9093
+      node_exporter_port: 9100
+      connection_timeout: 30
+      test_scenarios:
+        - "metrics_collection"
+        - "dashboard_access"
+        - "alert_management"
+        - "performance_monitoring"
+  
+  database_tests:
+    schema_validation:
+      enabled: true
+      expected_schemas:
+        - "deepcoder"
+        - "deepseek"
+        - "hermes"
+        - "imp"
+        - "mimo"
+        - "mixtral"
+        - "openchat"
+        - "phi3"
+        - "yi34"
+    
+    data_integrity:
+      enabled: true
+      test_scenarios:
+        - "data_consistency"
+        - "referential_integrity"
+        - "constraint_validation"
+        - "performance_optimization"
+    
+    connection_pooling:
+      enabled: true
+      pool_size: 20
+      max_overflow: 10
+      timeout: 30
+      test_scenarios:
+        - "pool_initialization"
+        - "connection_management"
+        - "load_distribution"
+        - "error_recovery" 

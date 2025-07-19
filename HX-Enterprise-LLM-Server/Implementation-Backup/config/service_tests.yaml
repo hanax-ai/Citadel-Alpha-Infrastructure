@@ -1,0 +1,106 @@
+service_tests:
+  unit_tests:
+    coverage:
+      minimum_line_coverage: 95
+      minimum_branch_coverage: 90
+      minimum_function_coverage: 95
+      coverage_report_format: "html"
+    
+    execution:
+      timeout_seconds: 60
+      parallel_workers: 4
+      retry_failed: true
+      fail_fast: false
+    
+    reporting:
+      output_format: "html"
+      output_directory: "/opt/citadel/reports/testing/unit_tests"
+      include_coverage: true
+      include_performance: true
+  
+  load_tests:
+    scenarios:
+      normal_load:
+        duration_seconds: 300
+        ramp_up_time_seconds: 60
+        concurrent_users: 50
+        target_rps: 25
+        error_threshold_percent: 1
+      
+      peak_load:
+        duration_seconds: 300
+        ramp_up_time_seconds: 30
+        concurrent_users: 100
+        target_rps: 50
+        error_threshold_percent: 1
+      
+      stress_load:
+        duration_seconds: 600
+        ramp_up_time_seconds: 120
+        concurrent_users: 200
+        target_rps: 100
+        error_threshold_percent: 5
+    
+    monitoring:
+      collect_metrics: true
+      metrics_interval_seconds: 15
+      alert_on_threshold_breach: true
+    
+    reporting:
+      output_format: "html"
+      output_directory: "/opt/citadel/reports/testing/load_tests"
+      include_performance_graphs: true
+      include_error_analysis: true
+  
+  security_tests:
+    vulnerability_scanning:
+      enabled: true
+      scan_frequency: "daily"
+      vulnerability_threshold: 0
+      auto_remediation: false
+    
+    penetration_testing:
+      enabled: true
+      test_frequency: "weekly"
+      test_duration_hours: 4
+      authorized_testing: true
+    
+    compliance_testing:
+      enabled: true
+      compliance_frameworks:
+        - "OWASP Top 10"
+        - "NIST Cybersecurity Framework"
+        - "ISO 27001"
+      compliance_score_target: 100
+    
+    reporting:
+      output_format: "html"
+      output_directory: "/opt/citadel/reports/testing/security_tests"
+      include_vulnerability_details: true
+      include_remediation_guidance: true
+  
+  reliability_tests:
+    availability_testing:
+      test_duration_hours: 24
+      availability_target_percent: 99.9
+      monitoring_interval_seconds: 30
+      failure_threshold_percent: 0.1
+    
+    recovery_testing:
+      recovery_time_target_seconds: 300
+      recovery_point_target_seconds: 60
+      disaster_recovery_enabled: true
+    
+    chaos_testing:
+      enabled: true
+      test_scenarios:
+        - "service_restart"
+        - "network_partition"
+        - "resource_exhaustion"
+        - "dependency_failure"
+    
+    reporting:
+      output_format: "html"
+      output_directory: "/opt/citadel/reports/testing/reliability_tests"
+      include_availability_metrics: true
+      include_recovery_analysis: true 

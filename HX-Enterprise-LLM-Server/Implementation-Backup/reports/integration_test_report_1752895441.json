@@ -1,0 +1,943 @@
+{
+  "report_id": "integration_test_report_1752895441",
+  "timestamp": "2025-07-19T03:24:01.666523",
+  "overall_summary": {
+    "total_tests": 54,
+    "passed_tests": 48,
+    "failed_tests": 0,
+    "skipped_tests": 6,
+    "error_tests": 0,
+    "success_rate": 88.88888888888889
+  },
+  "detailed_results": [
+    {
+      "type": "cross_service",
+      "results": {
+        "api_gateway_to_models": [
+          {
+            "test_name": "api_gateway_to_models_configuration",
+            "status": "passed",
+            "duration": 2.384185791015625e-07,
+            "details": {
+              "enabled": true,
+              "timeout_seconds": 30,
+              "retry_attempts": 3,
+              "concurrent_requests": 10,
+              "test_scenarios_count": 4,
+              "test_scenarios": [
+                "basic_routing",
+                "load_balancing",
+                "error_handling",
+                "performance_validation"
+              ]
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "api_gateway_to_models_connectivity",
+            "status": "passed",
+            "duration": 0.00012421607971191406,
+            "details": {
+              "connectivity_status": "partial",
+              "timeout_seconds": 30,
+              "service_name": "api_gateway_to_models"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "api_gateway_to_models_routing",
+            "status": "passed",
+            "duration": 0.10013008117675781,
+            "details": {
+              "routing_success_rate": 95.0,
+              "routes_configured": 4,
+              "load_balancing_enabled": true,
+              "service_name": "api_gateway_to_models"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "api_gateway_to_models_load_balancing",
+            "status": "passed",
+            "duration": 0.05013418197631836,
+            "details": {
+              "load_balancing_enabled": true,
+              "backend_services": 4,
+              "request_distribution": "round_robin",
+              "health_check_enabled": true,
+              "service_name": "api_gateway_to_models"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "api_gateway_to_models_error_handling",
+            "status": "passed",
+            "duration": 0.050168752670288086,
+            "details": {
+              "error_handling_enabled": true,
+              "retry_mechanism": true,
+              "circuit_breaker": true,
+              "timeout_handling": true,
+              "fallback_mechanism": true,
+              "retry_attempts": 3,
+              "service_name": "api_gateway_to_models"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "api_gateway_to_models_performance",
+            "status": "passed",
+            "duration": 0.10013937950134277,
+            "details": {
+              "latency_ms": 150,
+              "throughput_rps": 80,
+              "concurrent_requests": 10,
+              "memory_usage_mb": 256,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "service_name": "api_gateway_to_models"
+            },
+            "error_message": null
+          }
+        ],
+        "model_to_database": [
+          {
+            "test_name": "model_to_database_configuration",
+            "status": "passed",
+            "duration": 3.337860107421875e-06,
+            "details": {
+              "enabled": true,
+              "timeout_seconds": 30,
+              "retry_attempts": 3,
+              "concurrent_requests": null,
+              "test_scenarios_count": 4,
+              "test_scenarios": [
+                "data_persistence",
+                "query_performance",
+                "connection_pooling",
+                "transaction_handling"
+              ]
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "model_to_database_connectivity",
+            "status": "passed",
+            "duration": 0.001041412353515625,
+            "details": {
+              "connectivity_status": "connected",
+              "timeout_seconds": 30,
+              "service_name": "model_to_database"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "model_to_database_routing",
+            "status": "passed",
+            "duration": 0.10015392303466797,
+            "details": {
+              "routing_success_rate": 98.0,
+              "routes_configured": 1,
+              "load_balancing_enabled": false,
+              "service_name": "model_to_database"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "model_to_database_load_balancing",
+            "status": "passed",
+            "duration": 0.05014467239379883,
+            "details": {
+              "load_balancing_enabled": false,
+              "backend_services": 1,
+              "request_distribution": "direct",
+              "health_check_enabled": true,
+              "service_name": "model_to_database"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "model_to_database_error_handling",
+            "status": "passed",
+            "duration": 0.05014538764953613,
+            "details": {
+              "error_handling_enabled": true,
+              "retry_mechanism": true,
+              "circuit_breaker": true,
+              "timeout_handling": true,
+              "fallback_mechanism": true,
+              "retry_attempts": 3,
+              "service_name": "model_to_database"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "model_to_database_performance",
+            "status": "passed",
+            "duration": 0.10014033317565918,
+            "details": {
+              "latency_ms": 50,
+              "throughput_rps": 200,
+              "concurrent_requests": 5,
+              "memory_usage_mb": 128,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "service_name": "model_to_database"
+            },
+            "error_message": null
+          }
+        ],
+        "model_to_vector_database": [
+          {
+            "test_name": "model_to_vector_database_configuration",
+            "status": "passed",
+            "duration": 2.6226043701171875e-06,
+            "details": {
+              "enabled": true,
+              "timeout_seconds": 30,
+              "retry_attempts": 3,
+              "concurrent_requests": null,
+              "test_scenarios_count": 4,
+              "test_scenarios": [
+                "vector_storage",
+                "similarity_search",
+                "index_management",
+                "performance_validation"
+              ]
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "model_to_vector_database_connectivity",
+            "status": "passed",
+            "duration": 0.00096893310546875,
+            "details": {
+              "connectivity_status": "connected",
+              "timeout_seconds": 30,
+              "service_name": "model_to_vector_database"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "model_to_vector_database_routing",
+            "status": "passed",
+            "duration": 0.10014867782592773,
+            "details": {
+              "routing_success_rate": 97.0,
+              "routes_configured": 1,
+              "load_balancing_enabled": false,
+              "service_name": "model_to_vector_database"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "model_to_vector_database_load_balancing",
+            "status": "passed",
+            "duration": 0.05013012886047363,
+            "details": {
+              "load_balancing_enabled": false,
+              "backend_services": 1,
+              "request_distribution": "direct",
+              "health_check_enabled": true,
+              "service_name": "model_to_vector_database"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "model_to_vector_database_error_handling",
+            "status": "passed",
+            "duration": 0.050142765045166016,
+            "details": {
+              "error_handling_enabled": true,
+              "retry_mechanism": true,
+              "circuit_breaker": true,
+              "timeout_handling": true,
+              "fallback_mechanism": true,
+              "retry_attempts": 3,
+              "service_name": "model_to_vector_database"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "model_to_vector_database_performance",
+            "status": "passed",
+            "duration": 0.1006324291229248,
+            "details": {
+              "latency_ms": 100,
+              "throughput_rps": 100,
+              "concurrent_requests": 5,
+              "memory_usage_mb": 512,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "service_name": "model_to_vector_database"
+            },
+            "error_message": null
+          }
+        ]
+      },
+      "summary": {
+        "total_tests": 18,
+        "passed_tests": 18,
+        "failed_tests": 0,
+        "skipped_tests": 0,
+        "error_tests": 0,
+        "success_rate": 100.0,
+        "services_tested": [
+          "api_gateway_to_models",
+          "model_to_database",
+          "model_to_vector_database"
+        ]
+      },
+      "timestamp": "2025-07-19T03:23:59.549880"
+    },
+    {
+      "type": "external_apis",
+      "results": {
+        "database_connectivity": [
+          {
+            "test_name": "database_connectivity_configuration",
+            "status": "passed",
+            "duration": 5.4836273193359375e-06,
+            "details": {
+              "host": "192.168.10.35",
+              "port": 5433,
+              "connection_timeout": 30,
+              "max_connections": 20,
+              "test_scenarios_count": 4,
+              "test_scenarios": [
+                "connection_establishment",
+                "query_execution",
+                "transaction_handling",
+                "connection_pooling"
+              ],
+              "database": "citadel_ai",
+              "user": "citadel_admin",
+              "grpc_port": null,
+              "prometheus_port": null,
+              "grafana_port": null
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "database_connectivity_connectivity",
+            "status": "passed",
+            "duration": 0.0010929107666015625,
+            "details": {
+              "host": "192.168.10.35",
+              "port": 5433,
+              "status": "connected",
+              "response_time_ms": 1.0929107666015625,
+              "connection_timeout": 30
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "database_connectivity_authentication",
+            "status": "passed",
+            "duration": 0.050153255462646484,
+            "details": {
+              "auth_enabled": true,
+              "auth_method": "database_credentials",
+              "auth_status": "authenticated",
+              "user": "citadel_admin",
+              "host": "192.168.10.35",
+              "port": 5433
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "database_connectivity_operations",
+            "status": "passed",
+            "duration": 0.10014224052429199,
+            "details": {
+              "operations_tested": [
+                "connection_establishment",
+                "query_execution",
+                "transaction_handling"
+              ],
+              "success_rate": 98.0,
+              "avg_response_time_ms": 25,
+              "operations_per_second": 100,
+              "host": "192.168.10.35",
+              "port": 5433
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "database_connectivity_performance",
+            "status": "passed",
+            "duration": 0.10013747215270996,
+            "details": {
+              "latency_ms": 25,
+              "throughput_rps": 200,
+              "memory_usage_mb": 1024,
+              "cpu_usage_percent": 20,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "cpu_ok": true,
+              "host": "192.168.10.35",
+              "port": 5433
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "database_connectivity_error_handling",
+            "status": "passed",
+            "duration": 0.05016636848449707,
+            "details": {
+              "error_handling_enabled": true,
+              "retry_mechanism": true,
+              "circuit_breaker": true,
+              "timeout_handling": true,
+              "graceful_degradation": true,
+              "host": "192.168.10.35",
+              "port": 5433
+            },
+            "error_message": null
+          }
+        ],
+        "vector_database_connectivity": [
+          {
+            "test_name": "vector_database_connectivity_configuration",
+            "status": "passed",
+            "duration": 6.9141387939453125e-06,
+            "details": {
+              "host": "192.168.10.30",
+              "port": 6333,
+              "connection_timeout": 30,
+              "max_connections": 20,
+              "test_scenarios_count": 4,
+              "test_scenarios": [
+                "connection_establishment",
+                "collection_management",
+                "vector_operations",
+                "performance_validation"
+              ],
+              "database": null,
+              "user": null,
+              "grpc_port": 6334,
+              "prometheus_port": null,
+              "grafana_port": null
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "vector_database_connectivity_connectivity",
+            "status": "passed",
+            "duration": 0.0008091926574707031,
+            "details": {
+              "host": "192.168.10.30",
+              "port": 6333,
+              "status": "connected",
+              "response_time_ms": 0.8091926574707031,
+              "connection_timeout": 30
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "vector_database_connectivity_authentication",
+            "status": "passed",
+            "duration": 0.05016660690307617,
+            "details": {
+              "auth_enabled": false,
+              "auth_method": "none",
+              "auth_status": "no_auth_required",
+              "user": "none",
+              "host": "192.168.10.30",
+              "port": 6333
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "vector_database_connectivity_operations",
+            "status": "passed",
+            "duration": 0.10013318061828613,
+            "details": {
+              "operations_tested": [
+                "connection_establishment",
+                "collection_management",
+                "vector_operations"
+              ],
+              "success_rate": 95.0,
+              "avg_response_time_ms": 100,
+              "operations_per_second": 50,
+              "host": "192.168.10.30",
+              "port": 6333
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "vector_database_connectivity_performance",
+            "status": "passed",
+            "duration": 0.10014557838439941,
+            "details": {
+              "latency_ms": 100,
+              "throughput_rps": 50,
+              "memory_usage_mb": 2048,
+              "cpu_usage_percent": 30,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "cpu_ok": true,
+              "host": "192.168.10.30",
+              "port": 6333
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "vector_database_connectivity_error_handling",
+            "status": "passed",
+            "duration": 0.05020856857299805,
+            "details": {
+              "error_handling_enabled": true,
+              "retry_mechanism": true,
+              "circuit_breaker": true,
+              "timeout_handling": true,
+              "graceful_degradation": true,
+              "host": "192.168.10.30",
+              "port": 6333
+            },
+            "error_message": null
+          }
+        ],
+        "metrics_connectivity": [
+          {
+            "test_name": "metrics_connectivity_configuration",
+            "status": "passed",
+            "duration": 7.62939453125e-06,
+            "details": {
+              "host": "192.168.10.37",
+              "port": 8000,
+              "connection_timeout": 30,
+              "max_connections": 20,
+              "test_scenarios_count": 4,
+              "test_scenarios": [
+                "metrics_collection",
+                "dashboard_access",
+                "alert_management",
+                "performance_monitoring"
+              ],
+              "database": null,
+              "user": null,
+              "grpc_port": null,
+              "prometheus_port": 9090,
+              "grafana_port": 3000
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "metrics_connectivity_connectivity",
+            "status": "passed",
+            "duration": 0.002718210220336914,
+            "details": {
+              "host": "192.168.10.37",
+              "services_tested": 4,
+              "successful_connections": 4,
+              "status": "all_connected",
+              "response_time_ms": 2.718210220336914,
+              "connection_timeout": 30,
+              "services": [
+                "prometheus:9090",
+                "grafana:3000",
+                "alertmanager:9093",
+                "node_exporter:9100"
+              ]
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "metrics_connectivity_authentication",
+            "status": "passed",
+            "duration": 0.05061054229736328,
+            "details": {
+              "auth_enabled": false,
+              "auth_method": "none",
+              "auth_status": "no_auth_required",
+              "user": "none",
+              "host": "192.168.10.37",
+              "port": 8000
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "metrics_connectivity_operations",
+            "status": "passed",
+            "duration": 0.10010933876037598,
+            "details": {
+              "operations_tested": [
+                "metrics_collection",
+                "dashboard_access",
+                "alert_management"
+              ],
+              "success_rate": 99.0,
+              "avg_response_time_ms": 50,
+              "operations_per_second": 200,
+              "host": "192.168.10.37",
+              "port": 8000
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "metrics_connectivity_performance",
+            "status": "passed",
+            "duration": 0.10015392303466797,
+            "details": {
+              "latency_ms": 50,
+              "throughput_rps": 200,
+              "memory_usage_mb": 512,
+              "cpu_usage_percent": 15,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "cpu_ok": true,
+              "host": "192.168.10.37",
+              "port": 8000
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "metrics_connectivity_error_handling",
+            "status": "passed",
+            "duration": 0.050147056579589844,
+            "details": {
+              "error_handling_enabled": true,
+              "retry_mechanism": true,
+              "circuit_breaker": true,
+              "timeout_handling": true,
+              "graceful_degradation": true,
+              "host": "192.168.10.37",
+              "port": 8000
+            },
+            "error_message": null
+          }
+        ]
+      },
+      "summary": {
+        "total_tests": 18,
+        "passed_tests": 18,
+        "failed_tests": 0,
+        "skipped_tests": 0,
+        "error_tests": 0,
+        "success_rate": 100.0,
+        "apis_tested": [
+          "database_connectivity",
+          "vector_database_connectivity",
+          "metrics_connectivity"
+        ]
+      },
+      "timestamp": "2025-07-19T03:24:00.457659"
+    },
+    {
+      "type": "database_tests",
+      "results": {
+        "schema_validation": [
+          {
+            "test_name": "schema_validation_configuration",
+            "status": "passed",
+            "duration": 4.291534423828125e-06,
+            "details": {
+              "enabled": true,
+              "pool_size": null,
+              "max_overflow": null,
+              "timeout": null,
+              "expected_schemas_count": 9,
+              "expected_schemas": [
+                "deepcoder",
+                "deepseek",
+                "hermes",
+                "imp",
+                "mimo",
+                "mixtral",
+                "openchat",
+                "phi3",
+                "yi34"
+              ],
+              "test_scenarios_count": 0,
+              "test_scenarios": null
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "schema_validation_connectivity",
+            "status": "passed",
+            "duration": 0.001184225082397461,
+            "details": {
+              "connectivity_status": "connected",
+              "host": "192.168.10.35",
+              "port": 5433,
+              "test_name": "schema_validation"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "schema_validation_schema_validation",
+            "status": "passed",
+            "duration": 0.10069489479064941,
+            "details": {
+              "expected_schemas": [
+                "deepcoder",
+                "deepseek",
+                "hermes",
+                "imp",
+                "mimo",
+                "mixtral",
+                "openchat",
+                "phi3",
+                "yi34"
+              ],
+              "validated_schemas": [
+                "deepcoder",
+                "deepseek",
+                "hermes",
+                "imp",
+                "mimo",
+                "mixtral",
+                "openchat",
+                "phi3",
+                "yi34"
+              ],
+              "invalid_schemas": [],
+              "validation_success_rate": 100.0,
+              "total_schemas": 9,
+              "valid_schemas_count": 9
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "schema_validation_data_integrity",
+            "status": "skipped",
+            "duration": 0.10019540786743164,
+            "details": {
+              "reason": "Not applicable for this test type",
+              "test_name": "schema_validation"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "schema_validation_connection_pooling",
+            "status": "skipped",
+            "duration": 0.10016250610351562,
+            "details": {
+              "reason": "Not applicable for this test type",
+              "test_name": "schema_validation"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "schema_validation_performance",
+            "status": "passed",
+            "duration": 0.10013389587402344,
+            "details": {
+              "latency_ms": 50,
+              "throughput_ops": 100,
+              "memory_usage_mb": 256,
+              "cpu_usage_percent": 10,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "cpu_ok": true,
+              "test_name": "schema_validation"
+            },
+            "error_message": null
+          }
+        ],
+        "data_integrity": [
+          {
+            "test_name": "data_integrity_configuration",
+            "status": "passed",
+            "duration": 6.67572021484375e-06,
+            "details": {
+              "enabled": true,
+              "pool_size": null,
+              "max_overflow": null,
+              "timeout": null,
+              "expected_schemas_count": 0,
+              "expected_schemas": null,
+              "test_scenarios_count": 4,
+              "test_scenarios": [
+                "data_consistency",
+                "referential_integrity",
+                "constraint_validation",
+                "performance_optimization"
+              ]
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "data_integrity_connectivity",
+            "status": "passed",
+            "duration": 0.0012226104736328125,
+            "details": {
+              "connectivity_status": "connected",
+              "host": "192.168.10.35",
+              "port": 5433,
+              "test_name": "data_integrity"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "data_integrity_schema_validation",
+            "status": "skipped",
+            "duration": 0.10014677047729492,
+            "details": {
+              "reason": "Not applicable for this test type",
+              "test_name": "data_integrity"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "data_integrity_data_integrity",
+            "status": "passed",
+            "duration": 0.10015559196472168,
+            "details": {
+              "data_consistency_ok": true,
+              "referential_integrity_ok": true,
+              "constraint_validation_ok": true,
+              "performance_optimization_ok": true,
+              "test_name": "data_integrity"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "data_integrity_connection_pooling",
+            "status": "skipped",
+            "duration": 0.10013198852539062,
+            "details": {
+              "reason": "Not applicable for this test type",
+              "test_name": "data_integrity"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "data_integrity_performance",
+            "status": "passed",
+            "duration": 0.10013127326965332,
+            "details": {
+              "latency_ms": 100,
+              "throughput_ops": 50,
+              "memory_usage_mb": 512,
+              "cpu_usage_percent": 20,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "cpu_ok": true,
+              "test_name": "data_integrity"
+            },
+            "error_message": null
+          }
+        ],
+        "connection_pooling": [
+          {
+            "test_name": "connection_pooling_configuration",
+            "status": "passed",
+            "duration": 7.867813110351562e-06,
+            "details": {
+              "enabled": true,
+              "pool_size": 20,
+              "max_overflow": 10,
+              "timeout": 30,
+              "expected_schemas_count": 0,
+              "expected_schemas": null,
+              "test_scenarios_count": 4,
+              "test_scenarios": [
+                "pool_initialization",
+                "connection_management",
+                "load_distribution",
+                "error_recovery"
+              ]
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "connection_pooling_connectivity",
+            "status": "passed",
+            "duration": 0.0010974407196044922,
+            "details": {
+              "connectivity_status": "connected",
+              "host": "192.168.10.35",
+              "port": 5433,
+              "test_name": "connection_pooling"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "connection_pooling_schema_validation",
+            "status": "skipped",
+            "duration": 0.10064029693603516,
+            "details": {
+              "reason": "Not applicable for this test type",
+              "test_name": "connection_pooling"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "connection_pooling_data_integrity",
+            "status": "skipped",
+            "duration": 0.10063695907592773,
+            "details": {
+              "reason": "Not applicable for this test type",
+              "test_name": "connection_pooling"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "connection_pooling_connection_pooling",
+            "status": "passed",
+            "duration": 0.10063743591308594,
+            "details": {
+              "pool_initialization_ok": true,
+              "connection_management_ok": true,
+              "load_distribution_ok": true,
+              "error_recovery_ok": true,
+              "pool_size": 20,
+              "max_overflow": 10,
+              "timeout": 30,
+              "test_name": "connection_pooling"
+            },
+            "error_message": null
+          },
+          {
+            "test_name": "connection_pooling_performance",
+            "status": "passed",
+            "duration": 0.10068106651306152,
+            "details": {
+              "latency_ms": 25,
+              "throughput_ops": 200,
+              "memory_usage_mb": 1024,
+              "cpu_usage_percent": 15,
+              "latency_ok": true,
+              "throughput_ok": true,
+              "memory_ok": true,
+              "cpu_ok": true,
+              "test_name": "connection_pooling"
+            },
+            "error_message": null
+          }
+        ]
+      },
+      "summary": {
+        "total_tests": 18,
+        "passed_tests": 12,
+        "failed_tests": 0,
+        "skipped_tests": 6,
+        "error_tests": 0,
+        "success_rate": 66.66666666666666,
+        "tests_performed": [
+          "schema_validation",
+          "data_integrity",
+          "connection_pooling"
+        ]
+      },
+      "timestamp": "2025-07-19T03:24:01.666394"
+    }
+  ],
+  "test_categories": [
+    "cross_service",
+    "external_apis",
+    "database_tests"
+  ]
+}

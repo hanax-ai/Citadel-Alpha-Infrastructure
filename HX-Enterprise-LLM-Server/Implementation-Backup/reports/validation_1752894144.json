@@ -1,0 +1,47 @@
+{
+  "validation_id": "validation_1752894144",
+  "timestamp": "2025-07-19T03:02:24.157436",
+  "overall_success": true,
+  "total_validations": 6,
+  "passed_validations": 6,
+  "failed_validations": 0,
+  "duration": 0.011296749114990234,
+  "results": [
+    {
+      "function": "validate_directory_structure",
+      "success": true,
+      "message": "Directory structure validation successful",
+      "timestamp": "2025-07-19T03:02:24.146155"
+    },
+    {
+      "function": "validate_configuration_files",
+      "success": true,
+      "message": "Configuration files validation successful",
+      "timestamp": "2025-07-19T03:02:24.146168"
+    },
+    {
+      "function": "validate_configuration",
+      "success": true,
+      "message": "Configuration validation successful",
+      "timestamp": "2025-07-19T03:02:24.147129"
+    },
+    {
+      "function": "validate_environment",
+      "success": true,
+      "message": "Environment validation successful",
+      "timestamp": "2025-07-19T03:02:24.147180"
+    },
+    {
+      "function": "validate_runner",
+      "success": true,
+      "message": "Test runner validation successful",
+      "timestamp": "2025-07-19T03:02:24.157327"
+    },
+    {
+      "function": "validate_reporter",
+      "success": true,
+      "message": "Test reporter validation successful",
+      "timestamp": "2025-07-19T03:02:24.157433"
+    }
+  ]
+}

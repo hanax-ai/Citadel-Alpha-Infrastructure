@@ -1,0 +1,17 @@
+{
+  "report_id": "component_test_report_1752894591",
+  "timestamp": "2025-07-19T03:09:51.795426",
+  "overall_summary": {
+    "total_tests": 35,
+    "passed_tests": 32,
+    "failed_tests": 1,
+    "skipped_tests": 0,
+    "error_tests": 2,
+    "success_rate": 91.42857142857143
+  },
+  "detailed_results": [
+    {
+      "type": "ai_models",
+      "results": {
+        "mixtral": [
+          
