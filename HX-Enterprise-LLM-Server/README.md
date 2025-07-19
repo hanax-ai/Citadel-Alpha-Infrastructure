@@ -35,20 +35,139 @@ The **HX-Enterprise LLM Server** is a high-performance, enterprise-grade infrast
 
 The HXP-Enterprise LLM Server implements a **layered, service-oriented architecture** with four primary layers:
 
+```mermaid
+graph TB
+    subgraph "🖥️ Operational Management Layer"
+        A1[Health Monitoring Dashboard]
+        A2[Centralized Logging System]
+        A3[Configuration Management]
+        A4[Administrative UI]
+        A5[Alert & Notification System]
+    end
+    
+    subgraph "🔗 Integration Middleware Layer"
+        B1[API Gateway & Load Balancer]
+        B2[Database Connectors]
+        B3[Vector Database Interface]
+        B4[Redis Cache Layer]
+        B5[Message Queue System]
+    end
+    
+    subgraph "🤖 AI Model Services Layer"
+        C1[Mixtral-8x7B<br/>Advanced Reasoning<br/>Port: 11400]
+        C2[Hermes-2<br/>Conversational AI<br/>Port: 11401]
+        C3[OpenChat-3.5<br/>Interactive Dialogue<br/>Port: 11402]
+        C4[Phi-3-Mini<br/>Lightweight Processing<br/>Port: 11403]
+    end
+    
+    subgraph "⚙️ Infrastructure Foundation Layer"
+        D1[Ubuntu 24.04 LTS]
+        D2[Python 3.12.3+]
+        D3[vLLM Inference Engine]
+        D4[Systemd Service Management]
+        D5[GPU Optimization Layer]
+    end
+    
+    %% Connections between layers
+    A1 --> B1
+    A2 --> B1
+    A3 --> B1
+    A4 --> B1
+    A5 --> B1
+    
+    B1 --> C1
+    B1 --> C2
+    B1 --> C3
+    B1 --> C4
+    
+    B2 --> C1
+    B2 --> C2
+    B2 --> C3
+    B2 --> C4
+    
+    B3 --> C1
+    B3 --> C2
+    B3 --> C3
+    B3 --> C4
+    
+    B4 --> C1
+    B4 --> C2
+    B4 --> C3
+    B4 --> C4
+    
+    C1 --> D3
+    C2 --> D3
+    C3 --> D3
+    C4 --> D3
+    
+    D3 --> D1
+    D3 --> D2
+    D3 --> D4
+    D3 --> D5
+    
+    %% Styling
+    classDef managementLayer fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef middlewareLayer fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef modelLayer fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef infrastructureLayer fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    
+    class A1,A2,A3,A4,A5 managementLayer
+    class B1,B2,B3,B4,B5 middlewareLayer
+    class C1,C2,C3,C4 modelLayer
+    class D1,D2,D3,D4,D5 infrastructureLayer
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Operational Management                    │
-│  Health Monitoring • Logging • Configuration • Admin UI    │
-├─────────────────────────────────────────────────────────────┤
-│                   Integration Middleware                    │
-│  API Gateway • Database Connectors • Vector DB • Cache     │
-├─────────────────────────────────────────────────────────────┤
-│                    AI Model Services                        │
-│  Mixtral-8x7B • Hermes-2 • OpenChat-3.5 • Phi-3-Mini      │
-├─────────────────────────────────────────────────────────────┤
-│                  Infrastructure Foundation                  │
-│  Ubuntu 24.04 • Python 3.12.3 • vLLM • Systemd Services   │
-└─────────────────────────────────────────────────────────────┘
+
+### Network Architecture
+
+```mermaid
+graph LR
+    subgraph "🌐 Citadel AI Operating System Network"
+        subgraph "🖥️ HXP-Enterprise LLM Server<br/>192.168.10.29"
+            S1[Mixtral-8x7B<br/>Port: 11400]
+            S2[Hermes-2<br/>Port: 11401]
+            S3[OpenChat-3.5<br/>Port: 11402]
+            S4[Phi-3-Mini<br/>Port: 11403]
+        end
+        
+        subgraph "🗄️ SQL Database Server<br/>192.168.10.35"
+            DB1[PostgreSQL<br/>Port: 5432]
+        end
+        
+        subgraph "🔍 Vector Database Server<br/>192.168.10.30"
+            VDB1[Qdrant<br/>Port: 6333]
+        end
+        
+        subgraph "📊 Metrics Server<br/>192.168.10.37"
+            M1[Prometheus<br/>Port: 9090]
+            M2[Grafana<br/>Port: 3000]
+        end
+    end
+    
+    S1 -.->|Data Storage| DB1
+    S2 -.->|Data Storage| DB1
+    S3 -.->|Data Storage| DB1
+    S4 -.->|Data Storage| DB1
+    
+    S1 -.->|Vector Search| VDB1
+    S2 -.->|Vector Search| VDB1
+    S3 -.->|Vector Search| VDB1
+    S4 -.->|Vector Search| VDB1
+    
+    S1 -.->|Metrics| M1
+    S2 -.->|Metrics| M1
+    S3 -.->|Metrics| M1
+    S4 -.->|Metrics| M1
+    
+    M1 -.->|Visualization| M2
+    
+    %% Styling
+    classDef serverStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef dbStyle fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef metricsStyle fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    
+    class S1,S2,S3,S4 serverStyle
+    class DB1,VDB1 dbStyle
+    class M1,M2 metricsStyle
 ```
 
 ### Network Architecture
