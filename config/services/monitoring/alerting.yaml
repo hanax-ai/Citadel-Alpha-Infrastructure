@@ -1,0 +1,89 @@
+# Alerting Configuration for HX-Server-02
+# Integrates with central Alertmanager on 192.168.10.37
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - '192.168.10.37:9093'  # Central Alertmanager
+      timeout: 10s
+
+# Local alert rules for HX-Server-02 specific monitoring
+rule_files:
+  - "/opt/citadel-02/config/services/monitoring/rules/*.yml"
+
+# Alert routing configuration
+# Alerts from HX-Server-02 will be sent to:
+# 1. Central Alertmanager (192.168.10.37:9093)
+# 2. Local webhook endpoints for immediate response
+# 3. Citadel Gateway webhook at localhost:8001/webhooks/alerts
+
+groups:
+  - name: hx-server-02-alerts
+    rules:
+      # Service availability alerts
+      - alert: CitadelGatewayDown_HX02
+        expr: up{job="citadel-gateway",instance="hx-server-02"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          instance: hx-server-02
+          service: citadel-gateway
+        annotations:
+          summary: "Citadel Gateway is down on HX-Server-02"
+          description: "The Citadel Gateway service on HX-Server-02 (192.168.10.28) has been down for more than 1 minute"
+
+      - alert: OllamaServiceDown_HX02
+        expr: up{job="ollama-service",instance="hx-server-02"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          instance: hx-server-02
+          service: ollama
+        annotations:
+          summary: "Ollama service is down on HX-Server-02"
+          description: "The Ollama LLM service on HX-Server-02 (192.168.10.28) has been down for more than 2 minutes"
+
+      # Performance alerts
+      - alert: HighResponseTime_HX02
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="citadel-gateway",instance="hx-server-02"}[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          instance: hx-server-02
+          service: citadel-gateway
+        annotations:
+          summary: "High API response time on HX-Server-02"
+          description: "95th percentile response time is {{ $value }}s on HX-Server-02"
+
+      # Resource alerts
+      - alert: HighCPUUsage_HX02
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle",instance="hx-server-02"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+          instance: hx-server-02
+          component: cpu
+        annotations:
+          summary: "High CPU usage on HX-Server-02"
+          description: "CPU usage is {{ $value }}% on HX-Server-02"
+
+      - alert: HighMemoryUsage_HX02
+        expr: (1 - (node_memory_MemAvailable_bytes{instance="hx-server-02"} / node_memory_MemTotal_bytes{instance="hx-server-02"})) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          instance: hx-server-02
+          component: memory
+        annotations:
+          summary: "High memory usage on HX-Server-02"
+          description: "Memory usage is {{ $value }}% on HX-Server-02"
+
+# Webhook endpoints for local alert handling
+webhook_configs:
+  - url: 'http://localhost:8001/webhooks/alerts'
+    send_resolved: true
+    http_config:
+      basic_auth:
+        username: 'prometheus'
+        password: 'webhook-secret'

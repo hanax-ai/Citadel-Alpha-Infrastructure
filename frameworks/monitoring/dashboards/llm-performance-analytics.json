@@ -1,0 +1,124 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Citadel LLM Performance Analytics",
+    "tags": ["citadel", "llm", "performance", "analytics"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "id": 1,
+        "title": "LLM Request Rate Trends",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{job=~\"citadel-gateway-.*\",endpoint=~\"/v1/.*\"}[5m])) by (instance)",
+            "legendFormat": "LLM Requests/sec {{instance}}"
+          },
+          {
+            "expr": "sum(rate(ollama_requests_total[5m])) by (instance)",
+            "legendFormat": "Ollama Requests/sec {{instance}}"
+          }
+        ],
+        "yAxes": [
+          {"label": "Requests per second", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Token Generation Performance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ollama_tokens_generated_total[5m])",
+            "legendFormat": "Tokens/sec {{instance}}"
+          },
+          {
+            "expr": "rate(ollama_tokens_processed_total[5m])",
+            "legendFormat": "Tokens Processed/sec {{instance}}"
+          }
+        ],
+        "yAxes": [
+          {"label": "Tokens per second", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Model Usage Distribution",
+        "type": "pie",
+        "targets": [
+          {
+            "expr": "sum by (model) (increase(ollama_model_requests_total[1h]))",
+            "legendFormat": "{{model}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Response Time by Percentile",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=~\"citadel-gateway-.*\"}[5m]))",
+            "legendFormat": "50th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.90, rate(http_request_duration_seconds_bucket{job=~\"citadel-gateway-.*\"}[5m]))",
+            "legendFormat": "90th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=~\"citadel-gateway-.*\"}[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job=~\"citadel-gateway-.*\"}[5m]))",
+            "legendFormat": "99th percentile"
+          }
+        ],
+        "yAxes": [
+          {"label": "Response time (seconds)", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 16, "x": 8, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Queue Length and Processing Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "ollama_queue_length",
+            "legendFormat": "Queue Length {{instance}}"
+          },
+          {
+            "expr": "ollama_processing_time_seconds",
+            "legendFormat": "Processing Time {{instance}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 6,
+        "title": "Error Rate Analysis",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{job=~\"citadel-gateway-.*\",status=~\"4..\"}[5m])) by (instance)",
+            "legendFormat": "4xx Errors {{instance}}"
+          },
+          {
+            "expr": "sum(rate(http_requests_total{job=~\"citadel-gateway-.*\",status=~\"5..\"}[5m])) by (instance)",
+            "legendFormat": "5xx Errors {{instance}}"
+          }
+        ],
+        "yAxes": [
+          {"label": "Errors per second", "min": 0}
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      }
+    ],
+    "time": {"from": "now-6h", "to": "now"},
+    "refresh": "1m"
+  }
+}

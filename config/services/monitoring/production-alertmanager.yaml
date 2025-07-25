@@ -1,0 +1,227 @@
+# Production Alertmanager Configuration for Citadel LLM Infrastructure
+# Optimized for: Multi-channel alerting, intelligent routing, and escalation
+
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alerts@citadel.local'
+  smtp_hello: 'citadel-alertmanager'
+
+# Template definitions
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Routing configuration with intelligent escalation
+route:
+  group_by: ['alertname', 'cluster', 'instance', 'severity']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 4h
+  receiver: 'default-webhook'
+  
+  routes:
+    # Critical alerts - immediate notification with escalation
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 5s
+      repeat_interval: 15m
+      routes:
+        - match:
+            component: api-gateway
+          receiver: 'gateway-critical'
+        - match:
+            component: llm-service
+          receiver: 'llm-critical'
+        - match:
+            component: database
+          receiver: 'database-critical'
+
+    # HX-Server-02 specific alerts
+    - match:
+        instance: hx-server-02
+      receiver: 'hx-server-02-alerts'
+      group_wait: 30s
+      repeat_interval: 2h
+
+    # Performance alerts
+    - match:
+        component: performance
+      receiver: 'performance-alerts'
+      group_wait: 2m
+      repeat_interval: 1h
+
+    # Resource alerts
+    - match:
+        component: resources
+      receiver: 'resource-alerts'
+      group_wait: 5m
+      repeat_interval: 2h
+
+    # Warning level alerts
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      group_wait: 2m
+      repeat_interval: 6h
+
+# Receiver definitions
+receivers:
+  # Default webhook for all alerts
+  - name: 'default-webhook'
+    webhook_configs:
+      - url: 'http://192.168.10.31:8002/webhooks/alerts'
+        send_resolved: true
+        http_config:
+          basic_auth:
+            username: 'prometheus'
+            password: 'webhook-secret'
+        title: 'Citadel Alert: {{ .GroupLabels.alertname }}'
+        text: 'Alert Details: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+
+      - url: 'http://192.168.10.28:8001/webhooks/alerts'
+        send_resolved: true
+        http_config:
+          basic_auth:
+            username: 'prometheus'
+            password: 'webhook-secret'
+        title: 'Citadel Alert: {{ .GroupLabels.alertname }}'
+        text: 'Alert Details: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+
+  # Critical alerts with immediate escalation
+  - name: 'critical-alerts'
+    webhook_configs:
+      - url: 'http://192.168.10.31:8002/webhooks/alerts/critical'
+        send_resolved: true
+        title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        text: |
+          CRITICAL ALERT TRIGGERED
+          
+          Alert: {{ .GroupLabels.alertname }}
+          Severity: {{ .CommonLabels.severity }}
+          Instance: {{ .CommonLabels.instance }}
+          
+          {{ range .Alerts }}
+          Summary: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          {{ end }}
+
+      - url: 'http://192.168.10.28:8001/webhooks/alerts/critical'
+        send_resolved: true
+        title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+
+    # Email notifications for critical alerts
+    email_configs:
+      - to: 'admin@citadel.local'
+        subject: '🚨 CRITICAL: Citadel {{ .GroupLabels.alertname }}'
+        body: |
+          CRITICAL ALERT - Immediate Action Required
+          
+          Alert: {{ .GroupLabels.alertname }}
+          Time: {{ .CommonAnnotations.timestamp }}
+          Instance: {{ .CommonLabels.instance }}
+          
+          {{ range .Alerts }}
+          Summary: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          {{ end }}
+          
+          Dashboard: http://192.168.10.37:3000
+          Prometheus: http://192.168.10.37:9090
+
+  # Gateway-specific critical alerts
+  - name: 'gateway-critical'
+    webhook_configs:
+      - url: 'http://192.168.10.31:8002/webhooks/alerts/gateway'
+        send_resolved: true
+        title: '🌐 GATEWAY CRITICAL: {{ .GroupLabels.alertname }}'
+      - url: 'http://192.168.10.28:8001/webhooks/alerts/gateway'
+        send_resolved: true
+        title: '🌐 GATEWAY CRITICAL: {{ .GroupLabels.alertname }}'
+
+  # LLM service critical alerts
+  - name: 'llm-critical'
+    webhook_configs:
+      - url: 'http://192.168.10.31:8002/webhooks/alerts/llm'
+        send_resolved: true
+        title: '🤖 LLM CRITICAL: {{ .GroupLabels.alertname }}'
+      - url: 'http://192.168.10.28:8001/webhooks/alerts/llm'
+        send_resolved: true
+        title: '🤖 LLM CRITICAL: {{ .GroupLabels.alertname }}'
+
+  # Database critical alerts
+  - name: 'database-critical'
+    webhook_configs:
+      - url: 'http://192.168.10.31:8002/webhooks/alerts/database'
+        send_resolved: true
+        title: '💾 DATABASE CRITICAL: {{ .GroupLabels.alertname }}'
+      - url: 'http://192.168.10.28:8001/webhooks/alerts/database'
+        send_resolved: true
+        title: '💾 DATABASE CRITICAL: {{ .GroupLabels.alertname }}'
+
+  # HX-Server-02 specific alerts
+  - name: 'hx-server-02-alerts'
+    webhook_configs:
+      - url: 'http://192.168.10.28:8001/webhooks/alerts/local'
+        send_resolved: true
+        title: '🖥️ HX-Server-02: {{ .GroupLabels.alertname }}'
+        text: |
+          HX-Server-02 Alert
+          
+          {{ range .Alerts }}
+          Alert: {{ .Labels.alertname }}
+          Severity: {{ .Labels.severity }}
+          Summary: {{ .Annotations.summary }}
+          {{ end }}
+
+  # Performance alerts
+  - name: 'performance-alerts'
+    webhook_configs:
+      - url: 'http://192.168.10.31:8002/webhooks/alerts/performance'
+        send_resolved: true
+        title: '📈 PERFORMANCE: {{ .GroupLabels.alertname }}'
+      - url: 'http://192.168.10.28:8001/webhooks/alerts/performance'
+        send_resolved: true
+        title: '📈 PERFORMANCE: {{ .GroupLabels.alertname }}'
+
+  # Resource alerts
+  - name: 'resource-alerts'
+    webhook_configs:
+      - url: 'http://192.168.10.31:8002/webhooks/alerts/resources'
+        send_resolved: true
+        title: '💻 RESOURCES: {{ .GroupLabels.alertname }}'
+      - url: 'http://192.168.10.28:8001/webhooks/alerts/resources'
+        send_resolved: true
+        title: '💻 RESOURCES: {{ .GroupLabels.alertname }}'
+
+  # Warning level alerts
+  - name: 'warning-alerts'
+    webhook_configs:
+      - url: 'http://192.168.10.31:8002/webhooks/alerts/warning'
+        send_resolved: true
+        title: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+      - url: 'http://192.168.10.28:8001/webhooks/alerts/warning'
+        send_resolved: true
+        title: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+
+# Inhibition rules to prevent alert spam
+inhibit_rules:
+  # Inhibit warning alerts when critical alerts are firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service', 'instance']
+
+  # Inhibit service alerts when instance is down
+  - source_match:
+      alertname: 'InstanceDown'
+    target_match_re:
+      alertname: '.*'
+    equal: ['instance']
+
+  # Inhibit high CPU alerts when service is down
+  - source_match_re:
+      alertname: '.*ServiceDown.*'
+    target_match:
+      alertname: 'HighCPUUsage'
+    equal: ['instance']

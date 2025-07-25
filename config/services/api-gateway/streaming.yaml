@@ -1,0 +1,46 @@
+agent_streaming:
+  voice:
+    chunk_size: 1
+    timeout: 30.0
+    buffer_size: 50
+    delay_between_chunks: 0.01
+    description: "Real-time voice synthesis optimization"
+  copilot:
+    chunk_size: 5
+    timeout: 60.0
+    buffer_size: 200
+    delay_between_chunks: 0.05
+    description: "IDE code completion optimization"
+  gui:
+    chunk_size: 10
+    timeout: 120.0
+    buffer_size: 500
+    delay_between_chunks: 0.1
+    description: "Chat interface optimization"
+
+model_routing:
+  aliases:
+    phi3: "llama3.2:3b"
+    openchat: "openchat:latest"
+    mixtral: "mixtral:latest"
+    nous-hermes2-mixtral: "nous-hermes2-mixtral:latest"
+    nomic-embed-text: "nomic-embed-text:latest"
+
+  valid_models:
+    - "llama3.2:3b"
+    - "openchat:latest"
+    - "mixtral:latest"
+    - "nous-hermes2-mixtral:latest"
+    - "nomic-embed-text:latest"
+
+cache_settings:
+  embeddings:
+    ttl: 3600  # 1 hour
+    prefix: "citadel:embeddings:"
+    enabled: true
+  
+  responses:
+    ttl: 1800  # 30 minutes
+    prefix: "citadel:responses:"
+    enabled: true
+    max_size: "100MB"

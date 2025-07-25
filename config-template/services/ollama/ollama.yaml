@@ -1,0 +1,9 @@
+# Ollama Service Configuration
+service:
+  host: "127.0.0.1"
+  port: 11434
+  model_dir: "/mnt/active_llm_models/.ollama" # Matches Ollama default
+  timeout_seconds: 3600 # Max timeout for long generations
+
+ollama_bin_path: "/usr/local/bin/ollama" # Default install path for ollama binary
+

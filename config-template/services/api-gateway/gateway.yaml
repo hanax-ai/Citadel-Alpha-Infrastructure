@@ -1,0 +1,15 @@
+# FastAPI Gateway Configuration
+gateway:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4 # Number of Uvicorn workers
+  log_level: "info"
+  reload: false # Set to true for development
+
+backend_ollama:
+  url: "http://localhost:11434"
+  connect_timeout: 10 # seconds
+  read_timeout: 3600 # seconds (for long generations)
+  write_timeout: 300 # seconds
+  pool_timeout: 10 # seconds
+

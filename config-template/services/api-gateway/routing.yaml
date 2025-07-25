@@ -1,0 +1,24 @@
+# FastAPI Gateway Routing Configuration
+routes:
+  - path: "/v1/chat/completions"
+    method: ["POST"]
+    target_service: "ollama"
+    description: "OpenAI-compatible chat completions endpoint."
+  - path: "/api/generate"
+    method: ["POST"]
+    target_service: "ollama"
+    description: "Direct Ollama generate endpoint."
+  - path: "/api/tags"
+    method: ["GET"]
+    target_service: "ollama"
+    description: "List available Ollama models."
+  - path: "/health"
+    method: ["GET"]
+    target_service: "gateway_internal"
+    description: "Gateway health check endpoint."
+
+model_aliases:
+  "phi3": "phi3:latest"
+  "openchat": "openchat:latest"
+  "mixtral": "mixtral:latest"
+  "hermes2-mixtral": "nous-hermes2-mixtral:latest"

@@ -1,0 +1,46 @@
+# Citadel Global Configuration
+# Server-02 Configuration
+
+# Project paths
+paths:
+  home: "/opt/citadel-02"
+  config: "/opt/citadel-02/config"
+  logs: "/opt/citadel-02/logs"
+
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0           # Main database
+  cache_db: 1     # Separate database for caching isolation (LLM-01 proven pattern)
+
+# Middleware configuration
+middleware:
+  logging:
+    enabled: true
+    level: "info" 
+    include_body: false
+  
+  metrics:
+    enabled: true
+    detailed: true
+    prometheus_endpoint: "/metrics"
+
+# Monitoring and observability
+monitoring:
+  prometheus:
+    enabled: true
+    host: "192.168.10.37"
+    port: 9090
+    push_gateway: "192.168.10.37:9091"
+  
+  grafana:
+    enabled: true
+    host: "192.168.10.37"
+    port: 3000
+    admin_user: "admin"
+    admin_password: "admin"
+  
+  alertmanager:
+    enabled: true
+    host: "192.168.10.37"
+    port: 9093

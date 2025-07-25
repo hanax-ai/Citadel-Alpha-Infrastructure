@@ -1,0 +1,59 @@
+# Prometheus Configuration for HX-Server-02 (192.168.10.28)
+# This configuration is used for local metrics exposition
+# The central metrics server (192.168.10.37) will scrape these endpoints
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    instance: 'hx-server-02'
+    environment: 'production'
+
+scrape_configs:
+  # Local Citadel Gateway monitoring
+  - job_name: 'citadel-gateway'
+    static_configs:
+      - targets: ['localhost:8001']  # Updated to port 8001 for HX-Server-02
+        labels:
+          instance: 'hx-server-02'
+          service: 'citadel-gateway'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # Local Ollama service monitoring
+  - job_name: 'ollama-service'
+    static_configs:
+      - targets: ['localhost:11434']
+        labels:
+          instance: 'hx-server-02'
+          service: 'ollama'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Local Node Exporter (system metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+        labels:
+          instance: 'hx-server-02'
+          service: 'node-exporter'
+    scrape_interval: 30s
+
+  # Local Redis monitoring (if Redis exporter is available)
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['localhost:9121']
+        labels:
+          instance: 'hx-server-02'
+          service: 'redis'
+    scrape_interval: 30s
+
+# External monitoring integration
+# These endpoints will be scraped by the central metrics server at 192.168.10.37
+# Configuration for central server reference:
+#
+# Central Prometheus (192.168.10.37) should scrape:
+# - 192.168.10.28:8001/metrics (Citadel Gateway)
+# - 192.168.10.28:11434/metrics (Ollama Service)
+# - 192.168.10.28:9100/metrics (Node Exporter)
+# - 192.168.10.28:9121/metrics (Redis Exporter)

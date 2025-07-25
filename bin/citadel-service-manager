@@ -1,0 +1,110 @@
+#!/bin/bash
+# Citadel Service Manager - HX-Server-02
+# Comprehensive service management for all Citadel components
+
+set -euo pipefail
+
+CITADEL_HOME="/opt/citadel-02"
+VENV_PATH="$CITADEL_HOME/venv"
+SERVICE_NAME="citadel-gateway"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+
+# Service management functions
+start_service() {
+    log_info "Starting Citadel Gateway service..."
+    systemctl start $SERVICE_NAME
+    sleep 2
+    if systemctl is-active $SERVICE_NAME >/dev/null; then
+        log_success "Service started successfully"
+    else
+        log_error "Failed to start service"
+        return 1
+    fi
+}
+
+stop_service() {
+    log_info "Stopping Citadel Gateway service..."
+    systemctl stop $SERVICE_NAME
+    log_success "Service stopped"
+}
+
+restart_service() {
+    log_info "Restarting Citadel Gateway service..."
+    systemctl restart $SERVICE_NAME
+    sleep 2
+    if systemctl is-active $SERVICE_NAME >/dev/null; then
+        log_success "Service restarted successfully"
+    else
+        log_error "Failed to restart service"
+        return 1
+    fi
+}
+
+status_service() {
+    log_info "Checking service status..."
+    systemctl status $SERVICE_NAME --no-pager
+}
+
+health_check() {
+    log_info "Performing health check..."
+    
+    # Check service status
+    if systemctl is-active $SERVICE_NAME >/dev/null; then
+        log_success "Service is running"
+    else
+        log_error "Service is not running"
+        return 1
+    fi
+    
+    # Check API endpoint
+    if curl -sf http://localhost:8001/health >/dev/null; then
+        log_success "API endpoint is responding"
+    else
+        log_warn "API endpoint is not responding"
+    fi
+    
+    # Check database connectivity
+    if curl -sf http://localhost:8001/health/db >/dev/null; then
+        log_success "Database connectivity OK"
+    else
+        log_warn "Database connectivity issues"
+    fi
+}
+
+case "${1:-help}" in
+    start)
+        start_service
+        ;;
+    stop)
+        stop_service
+        ;;
+    restart)
+        restart_service
+        ;;
+    status)
+        status_service
+        ;;
+    health)
+        health_check
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status|health}"
+        echo "  start   - Start the Citadel Gateway service"
+        echo "  stop    - Stop the Citadel Gateway service"
+        echo "  restart - Restart the Citadel Gateway service"
+        echo "  status  - Show service status"
+        echo "  health  - Perform comprehensive health check"
+        exit 1
+        ;;
+esac

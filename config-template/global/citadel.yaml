@@ -1,0 +1,20 @@
+# Citadel AI Operating System - Global Configuration - Server-02
+project:
+  name: "HXP-Enterprise-LLM-Server-02"
+  version: "1.0.0"
+  environment: "development" # Default environment
+  server:
+    name: "hx-llm-server-02"
+    ip_address: "192.168.10.28"
+
+paths:
+  home: "/opt/citadel-02"
+  logs: "/opt/citadel-02/logs"
+  active_llm_models: "/home/agent0/.ollama" # Ollama's default model path for Server-02
+  archive_llm_models: "/mnt/archive_llm_models"
+
+gpu:
+  enabled: true
+  driver_version: "575.64.03"
+  cuda_version: "12.9"
+

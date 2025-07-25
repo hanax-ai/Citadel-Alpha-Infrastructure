@@ -1,0 +1,266 @@
+# Citadel AI Operating System - Global Logging Configuration for HX-Server-02
+# Enhanced version with centralized log aggregation support
+version: 1
+disable_existing_loggers: False
+
+formatters:
+  standard:
+    format: '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
+  json:
+    format: '{"timestamp": "%(asctime)s", "logger": "%(name)s", "level": "%(levelname)s", "module": "%(filename)s", "line": %(lineno)d, "message": "%(message)s", "instance": "hx-server-02"}'
+  detailed:
+    format: '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - PID:%(process)d - Thread:%(thread)d - %(message)s'
+  syslog:
+    format: 'citadel[%(process)d]: %(name)s - %(levelname)s - %(message)s'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: standard
+    level: INFO
+  
+  # API Gateway Logs
+  file_api_gateway_access:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/api-gateway/access.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 10
+    level: INFO
+  
+  file_api_gateway_error:
+    class: logging.handlers.RotatingFileHandler
+    formatter: detailed
+    filename: /var/log/citadel/api-gateway/error.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 10
+    level: ERROR
+  
+  file_api_gateway_service:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/api-gateway/service.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 10
+    level: INFO
+  
+  file_api_gateway_performance:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/api-gateway/performance.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 5
+    level: INFO
+  
+  # Ollama Service Logs
+  file_ollama_service:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/ollama/service.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 10
+    level: INFO
+  
+  file_ollama_requests:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/ollama/requests.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 5
+    level: INFO
+  
+  file_ollama_errors:
+    class: logging.handlers.RotatingFileHandler
+    formatter: detailed
+    filename: /var/log/citadel/ollama/errors.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 10
+    level: ERROR
+  
+  # Integration Service Logs
+  file_integration_sql:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/integration/sql-database.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 10
+    level: INFO
+  
+  file_integration_vector:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/integration/vector-database.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 10
+    level: INFO
+  
+  file_integration_metrics:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/integration/metrics.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 5
+    level: INFO
+  
+  # System and Core Logs
+  file_core_system:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/system/core.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 10
+    level: INFO
+  
+  file_core_security:
+    class: logging.handlers.RotatingFileHandler
+    formatter: detailed
+    filename: /var/log/citadel/system/security.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 20
+    level: WARNING
+  
+  file_core_audit:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/system/audit.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 30
+    level: INFO
+  
+  # Monitoring and Health Logs
+  file_monitoring_health:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/monitoring/health.log
+    maxBytes: 5242880 # 5 MB
+    backupCount: 5
+    level: INFO
+  
+  file_monitoring_alerts:
+    class: logging.handlers.RotatingFileHandler
+    formatter: json
+    filename: /var/log/citadel/monitoring/alerts.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 10
+    level: WARNING
+  
+  # Syslog handler for centralized logging
+  syslog:
+    class: logging.handlers.SysLogHandler
+    formatter: syslog
+    address: /dev/log
+    facility: local0
+    level: INFO
+
+loggers:
+  # Core application loggers
+  citadel_llm:
+    handlers: [console, file_core_system, syslog]
+    level: INFO
+    propagate: no
+  
+  citadel_llm.gateway:
+    handlers: [file_api_gateway_service, file_api_gateway_performance]
+    level: INFO
+    propagate: no
+  
+  citadel_llm.security:
+    handlers: [file_core_security, syslog]
+    level: WARNING
+    propagate: no
+  
+  citadel_llm.audit:
+    handlers: [file_core_audit, syslog]
+    level: INFO
+    propagate: no
+  
+  # Web server loggers
+  uvicorn.access:
+    handlers: [file_api_gateway_access]
+    level: INFO
+    propagate: no
+  
+  uvicorn.error:
+    handlers: [file_api_gateway_error, console]
+    level: INFO
+    propagate: no
+  
+  fastapi:
+    handlers: [file_api_gateway_service]
+    level: INFO
+    propagate: no
+  
+  # Service-specific loggers
+  ollama_service:
+    handlers: [file_ollama_service, file_ollama_requests]
+    level: INFO
+    propagate: no
+  
+  ollama_service.errors:
+    handlers: [file_ollama_errors, console]
+    level: ERROR
+    propagate: no
+  
+  # Integration loggers
+  sql_integration:
+    handlers: [file_integration_sql, file_integration_metrics]
+    level: INFO
+    propagate: no
+  
+  vector_integration:
+    handlers: [file_integration_vector, file_integration_metrics]
+    level: INFO
+    propagate: no
+  
+  metrics_integration:
+    handlers: [file_integration_metrics, file_monitoring_health]
+    level: INFO
+    propagate: no
+  
+  # Monitoring loggers
+  citadel_llm.monitoring:
+    handlers: [file_monitoring_health, file_monitoring_alerts]
+    level: INFO
+    propagate: no
+  
+  citadel_llm.alerts:
+    handlers: [file_monitoring_alerts, syslog]
+    level: WARNING
+    propagate: no
+  
+  # Performance monitoring
+  citadel_llm.performance:
+    handlers: [file_api_gateway_performance, file_monitoring_health]
+    level: INFO
+    propagate: no
+
+root:
+  handlers: [console, file_core_system]
+  level: INFO
+
+# Log aggregation configuration for external systems
+aggregation:
+  enabled: true
+  formats:
+    - json    # For structured log parsing
+    - syslog  # For traditional syslog systems
+  
+  # Filebeat/Fluentd configuration hints
+  log_paths:
+    api_gateway: "/var/log/citadel/api-gateway/*.log"
+    ollama: "/var/log/citadel/ollama/*.log"
+    integration: "/var/log/citadel/integration/*.log"
+    system: "/var/log/citadel/system/*.log"
+    monitoring: "/var/log/citadel/monitoring/*.log"
+  
+  # Log shipping targets
+  targets:
+    elasticsearch: "192.168.10.37:9200"
+    loki: "192.168.10.37:3100"
+    syslog: "192.168.10.37:514"
+  
+  # Retention policies
+  retention:
+    local_days: 7      # Local log retention
+    central_days: 30   # Central log retention
+    archive_days: 365  # Archive retention

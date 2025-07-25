@@ -1,0 +1,51 @@
+[Unit]
+Description=Citadel LLM API Gateway Enhanced with Auto-Recovery
+Documentation=https://citadel-docs.local/gateway
+After=network.target redis-server.service ollama.service
+Wants=redis-server.service ollama.service
+# Note: PostgreSQL is on remote host 192.168.10.35, so no local dependency
+
+[Service]
+Type=exec
+User=agent0
+Group=agent0
+WorkingDirectory=/opt/citadel-02/src
+Environment=PYTHONPATH=/opt/citadel-02/src
+Environment=CITADEL_ENV=production
+Environment=OLLAMA_HOST=localhost:11434
+
+# Startup configuration
+ExecStart=/opt/citadel-02/venv/bin/python3 -m citadel_llm.api.main
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Enhanced restart policy for automatic recovery
+Restart=always
+RestartSec=5s
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+# Process management with enhanced timeouts
+KillMode=mixed
+TimeoutStartSec=90
+TimeoutStopSec=45
+KillSignal=SIGTERM
+FinalKillSignal=SIGKILL
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Enhanced logging with dedicated log files
+StandardOutput=append:/var/log/citadel/api-gateway/service.log
+StandardError=append:/var/log/citadel/api-gateway/error.log
+SyslogIdentifier=citadel-gateway
+
+# Security and reliability enhancements
+NoNewPrivileges=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/citadel-02/logs /var/log/citadel
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

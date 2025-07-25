@@ -1,0 +1,108 @@
+#!/bin/bash
+# Citadel Deployment Script - HX-Server-02
+# Automated deployment and configuration management
+
+set -euo pipefail
+
+CITADEL_HOME="/opt/citadel-02"
+BACKUP_DIR="/opt/citadel-02/var/backup"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+
+deploy_service() {
+    log_info "Starting Citadel deployment process..."
+    
+    # Create backup
+    mkdir -p "$BACKUP_DIR"
+    local backup_file="$BACKUP_DIR/citadel-backup-$(date +%Y%m%d-%H%M%S).tar.gz"
+    tar -czf "$backup_file" -C /opt citadel-02 --exclude=venv --exclude=var/tmp
+    log_success "Backup created: $backup_file"
+    
+    # Stop service if running
+    if systemctl is-active citadel-gateway >/dev/null; then
+        log_info "Stopping service for deployment..."
+        systemctl stop citadel-gateway
+    fi
+    
+    # Update service files
+    if [[ -f "$CITADEL_HOME/config/systemd-services/citadel-gateway-enhanced.service" ]]; then
+        log_info "Installing systemd service..."
+        cp "$CITADEL_HOME/config/systemd-services/citadel-gateway-enhanced.service" /etc/systemd/system/citadel-gateway.service
+        systemctl daemon-reload
+        log_success "Service files updated"
+    fi
+    
+    # Install dependencies
+    if [[ -f "$CITADEL_HOME/venv/bin/pip" ]]; then
+        log_info "Updating dependencies..."
+        "$CITADEL_HOME/venv/bin/pip" install --upgrade pip >/dev/null
+        log_success "Dependencies updated"
+    fi
+    
+    # Start service
+    log_info "Starting service..."
+    systemctl enable citadel-gateway
+    systemctl start citadel-gateway
+    
+    # Wait for service to be ready
+    sleep 5
+    
+    # Verify deployment
+    if systemctl is-active citadel-gateway >/dev/null && curl -sf http://localhost:8001/health >/dev/null; then
+        log_success "Deployment completed successfully!"
+        log_info "Service is running and healthy"
+    else
+        log_error "Deployment verification failed"
+        log_warn "Check logs: journalctl -u citadel-gateway -f"
+        return 1
+    fi
+}
+
+rollback_deployment() {
+    local backup_file="${1:-}"
+    if [[ -z "$backup_file" || ! -f "$backup_file" ]]; then
+        log_error "Backup file not specified or not found"
+        echo "Available backups:"
+        ls -la "$BACKUP_DIR"/*.tar.gz 2>/dev/null || echo "No backups found"
+        return 1
+    fi
+    
+    log_warn "Rolling back to: $backup_file"
+    
+    # Stop service
+    systemctl stop citadel-gateway || true
+    
+    # Restore backup
+    cd /opt
+    tar -xzf "$backup_file"
+    
+    # Restart service
+    systemctl start citadel-gateway
+    
+    log_success "Rollback completed"
+}
+
+case "${1:-deploy}" in
+    deploy)
+        deploy_service
+        ;;
+    rollback)
+        rollback_deployment "${2:-}"
+        ;;
+    *)
+        echo "Usage: $0 {deploy|rollback [backup_file]}"
+        echo "  deploy           - Deploy current version"
+        echo "  rollback [file]  - Rollback to specified backup"
+        exit 1
+        ;;
+esac

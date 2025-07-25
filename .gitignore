@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+venv/
+citadel_venv/
+*.log
+logs/
+var/run/
+var/cache/
+var/tmp/
+config/secrets/*.yaml
+*.key
+*.pem
+.DS_Store
+.vscode/
+.idea/
+*.tmp
+.cache/

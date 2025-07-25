@@ -1,0 +1,14 @@
+# FastAPI Gateway Middleware Configuration
+middleware:
+  cors:
+    enabled: true
+    allow_origins: "*" # Should be restricted in production, see global security.yaml
+    allow_credentials: true
+    allow_methods: ["*"]
+    allow_headers: ["*"]
+  logging:
+    enabled: true
+    level: "info"
+    include_body: false
+  metrics:
+    enabled: false # To be implemented later with Prometheus

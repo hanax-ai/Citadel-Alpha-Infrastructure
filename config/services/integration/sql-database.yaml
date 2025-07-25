@@ -1,0 +1,26 @@
+database:
+  host: "192.168.10.35"
+  port: 5432
+  name: "citadel_llm"
+  pool_size: 10
+  timeout_seconds: 30
+  ssl_mode: "prefer"
+  
+# Connection pool settings
+pool:
+  min_size: 5
+  max_size: 10
+  max_inactive_connection_lifetime: 300
+
+# Health check settings
+health_check:
+  enabled: true
+  interval_seconds: 30
+  timeout_seconds: 5
+
+# Logging configuration
+logging:
+  level: "INFO"
+  log_queries: false
+  log_slow_queries: true
+  slow_query_threshold_ms: 1000

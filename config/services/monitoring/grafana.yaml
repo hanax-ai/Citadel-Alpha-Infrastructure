@@ -1,0 +1,55 @@
+# Grafana Configuration for HX-Server-02
+# Primary Grafana instance is on metrics server (192.168.10.37)
+# This configuration provides local dashboard structure
+
+provisioning:
+  dashboards:
+    enabled: true
+    providers:
+      - name: 'citadel-llm-dashboards'
+        folder: 'Citadel LLM Infrastructure'
+        type: 'file'
+        disableDeletion: false
+        editable: true
+        options:
+          path: '/opt/citadel-02/frameworks/monitoring/dashboards'
+      
+      - name: 'hx-server-02-dashboards'
+        folder: 'HX-Server-02 Local'
+        type: 'file'
+        disableDeletion: false
+        editable: true
+        options:
+          path: '/opt/citadel-02/frameworks/monitoring/local-dashboards'
+
+  datasources:
+    enabled: true
+    providers:
+      - name: 'local-prometheus'
+        type: 'prometheus'
+        url: 'http://localhost:9090'
+        isDefault: false
+        access: 'proxy'
+        
+      - name: 'central-prometheus'
+        type: 'prometheus'
+        url: 'http://192.168.10.37:9090'
+        isDefault: true
+        access: 'proxy'
+        
+      - name: 'citadel-postgres'
+        type: 'postgres'
+        url: '192.168.10.35:5432'
+        database: 'citadel_llm_db'
+        user: 'citadel_user'
+        secureJsonData:
+          password: 'CitadelLLM#2025$SecurePass!'
+        jsonData:
+          sslmode: 'prefer'
+
+# Dashboard categories for HX-Server-02:
+# - System Health (CPU, Memory, Disk, Network)
+# - Citadel Gateway Performance (API metrics, response times)
+# - LLM Service Metrics (Ollama performance, model usage)
+# - Database Integration (PostgreSQL connections)
+# - External Monitoring Integration (Central dashboards)

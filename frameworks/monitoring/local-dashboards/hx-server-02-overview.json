@@ -1,0 +1,76 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "HX-Server-02 Citadel Gateway Overview",
+    "tags": ["citadel", "hx-server-02", "gateway"],
+    "timezone": "UTC",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Service Health Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"citadel-gateway\",instance=\"hx-server-02\"}",
+            "legendFormat": "Gateway Status"
+          },
+          {
+            "expr": "up{job=\"ollama-service\",instance=\"hx-server-02\"}",
+            "legendFormat": "Ollama Status"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 0, "text": "DOWN", "color": "red"},
+              {"value": 1, "text": "UP", "color": "green"}
+            ]
+          }
+        },
+        "gridPos": {"h": 4, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "API Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"citadel-gateway\",instance=\"hx-server-02\"}[5m])",
+            "legendFormat": "Requests/sec"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"citadel-gateway\",instance=\"hx-server-02\"}[5m]))",
+            "legendFormat": "95th percentile"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4}
+      },
+      {
+        "id": 4,
+        "title": "System Resources",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "100 - (avg(irate(node_cpu_seconds_total{mode=\"idle\",instance=\"hx-server-02\"}[5m])) * 100)",
+            "legendFormat": "CPU Usage %"
+          },
+          {
+            "expr": "(1 - (node_memory_MemAvailable_bytes{instance=\"hx-server-02\"} / node_memory_MemTotal_bytes{instance=\"hx-server-02\"})) * 100",
+            "legendFormat": "Memory Usage %"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      }
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "30s"
+  }
+}

@@ -1,0 +1,6 @@
+# Ollama Performance Tuning Configuration
+performance:
+  gpu_layers: -1 # -1 means all layers on GPU if possible
+  num_threads: 0 # 0 means auto-detect
+  max_vram_usage_gb: 0 # 0 means no explicit limit, Ollama manages
+  max_concurrent_requests: 5 # Example, depends on GPU/CPU resources

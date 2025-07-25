@@ -1,0 +1,31 @@
+# Project Rules
+
+## R1.0: Virtual Environments
+
+- **Do not create new virtual environments ever**, unless explicitly requested
+- Work within the existing environment setup
+- Respect the current Python environment configuration
+
+## R2.0: Task Management
+
+- **Freelancing is prohibited** - follow the task as requested
+- If you have questions, ask for clarification
+- If you need help, request assistance
+- Stay focused on the assigned objectives
+
+## R3.0: Server Config
+
+- **Server is**
+- hostname: hx-llm-server-02
+- ip address: 192.168.10.28
+
+## R.4:Connect tro Postgres **
+
+- PGPASSWORD="CitadelLLM#2025\$SecurePass!" psql -h 192.168.10.35 -U citadel_llm_user -d citadel_llm_db -c "\du"
+
+## Metric Server
+
+- Prometheus: <http://192.168.10.37:9090>
+Grafana: <http://192.168.10.37:3000> (admin/admin)
+Alertmanager: <http://192.168.10.37:9093>
+Node Exporter: <http://192.168.10.37:9100>

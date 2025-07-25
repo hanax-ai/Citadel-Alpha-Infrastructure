@@ -1,0 +1,20 @@
+[Unit]
+Description=Citadel LLM API Gateway
+After=network.target ollama.service
+
+[Service]
+User=agent0
+Group=citadel
+WorkingDirectory=/opt/citadel/src
+Environment="CITADEL_HOME=/opt/citadel"
+Environment="CITADEL_ENV=development"
+Environment="PYTHONPATH=/opt/citadel/src"
+ExecStart=/opt/citadel/citadel_venv/bin/uvicorn citadel_llm.api.gateway:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=3
+StandardOutput=append:/var/log/citadel/api-gateway/service.log
+StandardError=append:/var/log/citadel/api-gateway/error.log
+SyslogIdentifier=citadel-gateway
+
+[Install]
+WantedBy=multi-user.target

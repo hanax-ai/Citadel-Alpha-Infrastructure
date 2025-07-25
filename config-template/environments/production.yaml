@@ -1,0 +1,21 @@
+# Production Environment Configuration (Placeholder)
+project:
+  environment: "production"
+
+fastapi_gateway:
+  reload: false
+  workers: 8 # More workers for production scale
+  log_level: "info"
+
+ollama_service:
+  log_level: "info"
+
+integrations:
+  sql:
+    enabled: true
+  vector:
+    enabled: true
+  metrics:
+    enabled: true
+
+# Add production-specific overrides and security settings here

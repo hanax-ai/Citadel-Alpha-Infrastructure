@@ -1,0 +1,18 @@
+# Alerting Configuration (Placeholder)
+rules:
+  - alert: HighGpuMemoryUsage
+    expr: nvidia_gpu_memory_used_bytes / nvidia_gpu_memory_total_bytes * 100 > 90
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High GPU Memory Usage on {{ $labels.instance }}"
+      description: "GPU memory usage is above 90% on {{ $labels.instance }}."
+  - alert: OllamaServiceDown
+    expr: up{job="ollama-service"} == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Ollama service is down on {{ $labels.instance }}"
+      description: "The Ollama service is not reachable."

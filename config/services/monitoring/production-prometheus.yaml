@@ -1,0 +1,135 @@
+# Production Prometheus Configuration for Citadel LLM Infrastructure
+# Target: Metrics Server (192.168.10.37)
+# Optimized for: High availability, performance, and comprehensive monitoring
+
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  external_labels:
+    cluster: 'citadel-production'
+    datacenter: 'hx-internal'
+    environment: 'production'
+
+rule_files:
+  - "/etc/prometheus/rules/citadel-alerts.yml"
+  - "/etc/prometheus/rules/citadel-performance.yml"
+  - "/etc/prometheus/rules/citadel-capacity.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - localhost:9093
+
+scrape_configs:
+  # Node Exporter - System Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: 
+          - '192.168.10.31:9100'  # HX-Server-01
+          - '192.168.10.28:9100'  # HX-Server-02
+          - '192.168.10.35:9100'  # PostgreSQL Server
+          - '192.168.10.37:9100'  # Metrics Server
+        labels:
+          cluster: 'citadel-infrastructure'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Citadel API Gateway - HX-Server-01
+  - job_name: 'citadel-gateway-01'
+    static_configs:
+      - targets: ['192.168.10.31:8002']
+        labels:
+          instance: 'hx-server-01'
+          service: 'citadel-gateway'
+          environment: 'production'
+          tier: 'primary'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Citadel API Gateway - HX-Server-02  
+  - job_name: 'citadel-gateway-02'
+    static_configs:
+      - targets: ['192.168.10.28:8001']
+        labels:
+          instance: 'hx-server-02'
+          service: 'citadel-gateway'
+          environment: 'production'
+          tier: 'secondary'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Ollama Service Monitoring
+  - job_name: 'ollama-service'
+    static_configs:
+      - targets: 
+          - '192.168.10.31:11434'  # HX-Server-01
+          - '192.168.10.28:11434'  # HX-Server-02
+        labels:
+          service: 'ollama'
+          component: 'llm-engine'
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 15s
+
+  # PostgreSQL Exporter
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['192.168.10.35:9187']
+        labels:
+          service: 'postgresql'
+          database: 'citadel_llm_db'
+          tier: 'database'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Redis Monitoring (if Redis exporter is available)
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: 
+          - '192.168.10.31:9121'  # HX-Server-01 Redis
+          - '192.168.10.28:9121'  # HX-Server-02 Redis
+        labels:
+          service: 'redis'
+          component: 'cache'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # GPU Monitoring (if GPU exporter is available)
+  - job_name: 'gpu-exporter'
+    static_configs:
+      - targets: 
+          - '192.168.10.31:9400'  # HX-Server-01 GPU
+          - '192.168.10.28:9400'  # HX-Server-02 GPU
+        labels:
+          service: 'nvidia-gpu'
+          component: 'compute'
+    scrape_interval: 30s
+    scrape_timeout: 15s
+
+  # Prometheus Self-Monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          component: 'monitoring'
+
+  # Custom Application Metrics
+  - job_name: 'citadel-app-metrics'
+    static_configs:
+      - targets: 
+          - '192.168.10.31:8001'  # HX-Server-01 App Metrics
+          - '192.168.10.28:8001'  # HX-Server-02 App Metrics
+    metrics_path: '/citadel-metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+# Storage configuration for production
+storage:
+  tsdb:
+    retention.time: 30d
+    retention.size: 50GB
+    wal-compression: true
