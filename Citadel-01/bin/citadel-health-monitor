@@ -1,0 +1,538 @@
+#!/bin/bash
+# Citadel Health Monitor Script
+# Continuous monitoring with alerting and automated recovery
+
+set -euo pipefail
+
+# Configuration
+CITADEL_HOME="/opt/citadel"
+HEALTH_LOG="/opt/citadel/logs/monitoring/health-monitor.log"
+CHECK_INTERVAL=60  # seconds
+ALERT_THRESHOLD=3  # consecutive failures before alert
+RECOVERY_ENABLED=true
+SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL:-}"  # Set in environment
+EMAIL_ALERTS="${EMAIL_ALERTS:-}"            # Set in environment
+
+# Health check endpoints
+declare -A ENDPOINTS=(
+    ["gateway"]="http://localhost:8002/health/"
+    ["gateway-quick"]="http://localhost:8002/health/quick"
+    ["management"]="http://localhost:8002/management/system/status"
+    ["ollama"]="http://localhost:11434/api/version"
+)
+
+# Service definitions
+SERVICES=(
+    "postgresql"
+    "redis-server"
+    "ollama"
+    "nginx"
+    "citadel-gateway"
+)
+
+# Failure counters
+declare -A FAILURE_COUNT=()
+declare -A LAST_STATUS=()
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Initialize
+mkdir -p "$(dirname "$HEALTH_LOG")"
+
+log() {
+    local level="$1"
+    local message="$2"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [$level] $message" | tee -a "$HEALTH_LOG"
+}
+
+log_info() {
+    log "INFO" "$1"
+    echo -e "${BLUE}ℹ️  $1${NC}"
+}
+
+log_warn() {
+    log "WARN" "$1"
+    echo -e "${YELLOW}⚠️  $1${NC}"
+}
+
+log_error() {
+    log "ERROR" "$1"
+    echo -e "${RED}❌ $1${NC}"
+}
+
+log_success() {
+    log "SUCCESS" "$1"
+    echo -e "${GREEN}✅ $1${NC}"
+}
+
+send_alert() {
+    local severity="$1"
+    local component="$2"
+    local message="$3"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    
+    log_error "ALERT [$severity] $component: $message"
+    
+    # Slack notification
+    if [[ -n "$SLACK_WEBHOOK_URL" ]] && command -v curl >/dev/null 2>&1; then
+        local emoji="🚨"
+        case "$severity" in
+            "CRITICAL") emoji="🔥" ;;
+            "WARNING") emoji="⚠️" ;;
+            "INFO") emoji="ℹ️" ;;
+        esac
+        
+        local payload=$(cat <<EOF
+{
+    "text": "$emoji Citadel Alert [$severity]",
+    "attachments": [
+        {
+            "color": "danger",
+            "fields": [
+                {"title": "Component", "value": "$component", "short": true},
+                {"title": "Severity", "value": "$severity", "short": true},
+                {"title": "Message", "value": "$message", "short": false},
+                {"title": "Timestamp", "value": "$timestamp", "short": true},
+                {"title": "Host", "value": "$(hostname)", "short": true}
+            ]
+        }
+    ]
+}
+EOF
+)
+        
+        curl -s -X POST -H 'Content-type: application/json' \
+            --data "$payload" "$SLACK_WEBHOOK_URL" >/dev/null 2>&1 || true
+    fi
+    
+    # Email notification (if configured)
+    if [[ -n "$EMAIL_ALERTS" ]] && command -v mail >/dev/null 2>&1; then
+        {
+            echo "Subject: Citadel Alert [$severity] - $component"
+            echo "From: citadel-monitor@$(hostname)"
+            echo "To: $EMAIL_ALERTS"
+            echo
+            echo "Citadel Health Monitor Alert"
+            echo "=========================="
+            echo
+            echo "Severity: $severity"
+            echo "Component: $component"
+            echo "Message: $message"
+            echo "Timestamp: $timestamp"
+            echo "Host: $(hostname)"
+            echo
+            echo "Please investigate immediately."
+        } | mail "$EMAIL_ALERTS" 2>/dev/null || true
+    fi
+}
+
+check_service_health() {
+    local service="$1"
+    
+    if ! systemctl list-unit-files "$service.service" &>/dev/null; then
+        return 2  # Service not found
+    fi
+    
+    if systemctl is-active --quiet "$service"; then
+        return 0  # Service running
+    else
+        return 1  # Service not running
+    fi
+}
+
+check_endpoint_health() {
+    local name="$1"
+    local url="$2"
+    local timeout="${3:-10}"
+    
+    if command -v curl >/dev/null 2>&1; then
+        if curl -s --max-time "$timeout" --fail "$url" >/dev/null 2>&1; then
+            return 0  # Endpoint healthy
+        else
+            return 1  # Endpoint unhealthy
+        fi
+    else
+        return 2  # curl not available
+    fi
+}
+
+check_database_health() {
+    if command -v psql >/dev/null 2>&1; then
+        if PGPASSWORD="CitadelLLM#2025\$SecurePass!" psql -h 192.168.10.35 -U citadel_llm_user -d citadel_llm_db -c "SELECT 1;" >/dev/null 2>&1; then
+            return 0  # Database healthy
+        else
+            return 1  # Database unhealthy
+        fi
+    else
+        return 2  # psql not available
+    fi
+}
+
+check_redis_health() {
+    if command -v redis-cli >/dev/null 2>&1; then
+        if redis-cli ping >/dev/null 2>&1; then
+            return 0  # Redis healthy
+        else
+            return 1  # Redis unhealthy
+        fi
+    else
+        return 2  # redis-cli not available
+    fi
+}
+
+check_system_resources() {
+    local cpu_threshold=90
+    local memory_threshold=90
+    local disk_threshold=90
+    
+    # CPU usage
+    local cpu_usage=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | awk -F'%' '{print $1}')
+    if (( $(echo "$cpu_usage > $cpu_threshold" | bc -l) )); then
+        log_warn "High CPU usage: ${cpu_usage}%"
+        return 1
+    fi
+    
+    # Memory usage
+    local memory_usage=$(free | grep Mem | awk '{printf("%.1f", ($3/$2) * 100.0)}')
+    if (( $(echo "$memory_usage > $memory_threshold" | bc -l) )); then
+        log_warn "High memory usage: ${memory_usage}%"
+        return 1
+    fi
+    
+    # Disk usage
+    local disk_usage=$(df /opt/citadel | tail -1 | awk '{print $5}' | sed 's/%//')
+    if [[ $disk_usage -gt $disk_threshold ]]; then
+        log_warn "High disk usage: ${disk_usage}%"
+        return 1
+    fi
+    
+    return 0
+}
+
+attempt_recovery() {
+    local component="$1"
+    local issue="$2"
+    
+    if [[ "$RECOVERY_ENABLED" != "true" ]]; then
+        log_info "Recovery disabled, skipping automatic recovery for $component"
+        return 1
+    fi
+    
+    log_info "Attempting automatic recovery for $component ($issue)"
+    
+    case "$component" in
+        "postgresql"|"redis-server"|"ollama"|"nginx"|"citadel-gateway")
+            log_info "Restarting service: $component"
+            if sudo systemctl restart "$component" 2>/dev/null; then
+                sleep 10  # Wait for service to stabilize
+                if check_service_health "$component" = 0; then
+                    log_success "Successfully recovered $component"
+                    send_alert "INFO" "$component" "Service automatically recovered after restart"
+                    return 0
+                else
+                    log_error "Failed to recover $component after restart"
+                    return 1
+                fi
+            else
+                log_error "Failed to restart $component"
+                return 1
+            fi
+            ;;
+        "database")
+            log_info "Database recovery not automated - manual intervention required"
+            return 1
+            ;;
+        "redis")
+            log_info "Attempting to restart Redis service"
+            if sudo systemctl restart redis-server 2>/dev/null; then
+                sleep 5
+                if check_redis_health = 0; then
+                    log_success "Successfully recovered Redis"
+                    return 0
+                fi
+            fi
+            return 1
+            ;;
+        *)
+            log_warn "No recovery procedure defined for $component"
+            return 1
+            ;;
+    esac
+}
+
+run_health_check() {
+    local all_healthy=true
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    
+    log_info "Starting health check cycle"
+    
+    # Check services
+    for service in "${SERVICES[@]}"; do
+        local status=""
+        local failure_key="service_$service"
+        
+        check_service_health "$service"
+        local result=$?
+        
+        case $result in
+            0)
+                status="HEALTHY"
+                FAILURE_COUNT["$failure_key"]=0
+                ;;
+            1)
+                status="UNHEALTHY"
+                ((FAILURE_COUNT["$failure_key"]=${FAILURE_COUNT["$failure_key"]:-0}+1))
+                all_healthy=false
+                ;;
+            2)
+                status="NOT_FOUND"
+                ((FAILURE_COUNT["$failure_key"]=${FAILURE_COUNT["$failure_key"]:-0}+1))
+                all_healthy=false
+                ;;
+        esac
+        
+        # Check if we need to alert or recover
+        local failure_count=${FAILURE_COUNT["$failure_key"]:-0}
+        if [[ $failure_count -ge $ALERT_THRESHOLD ]]; then
+            if [[ "${LAST_STATUS["$failure_key"]:-}" != "$status" ]]; then
+                send_alert "CRITICAL" "$service" "Service $status (${failure_count} consecutive failures)"
+                
+                # Attempt recovery
+                if attempt_recovery "$service" "$status"; then
+                    FAILURE_COUNT["$failure_key"]=0
+                    status="RECOVERED"
+                fi
+            fi
+        fi
+        
+        LAST_STATUS["$failure_key"]="$status"
+        log_info "Service $service: $status (failures: $failure_count)"
+    done
+    
+    # Check endpoints
+    for endpoint_name in "${!ENDPOINTS[@]}"; do
+        local url="${ENDPOINTS[$endpoint_name]}"
+        local failure_key="endpoint_$endpoint_name"
+        local status=""
+        
+        check_endpoint_health "$endpoint_name" "$url"
+        local result=$?
+        
+        case $result in
+            0)
+                status="HEALTHY"
+                FAILURE_COUNT["$failure_key"]=0
+                ;;
+            1)
+                status="UNHEALTHY"
+                ((FAILURE_COUNT["$failure_key"]=${FAILURE_COUNT["$failure_key"]:-0}+1))
+                all_healthy=false
+                ;;
+            2)
+                status="UNAVAILABLE"
+                ((FAILURE_COUNT["$failure_key"]=${FAILURE_COUNT["$failure_key"]:-0}+1))
+                all_healthy=false
+                ;;
+        esac
+        
+        # Alert if threshold reached
+        local failure_count=${FAILURE_COUNT["$failure_key"]:-0}
+        if [[ $failure_count -ge $ALERT_THRESHOLD ]]; then
+            if [[ "${LAST_STATUS["$failure_key"]:-}" != "$status" ]]; then
+                send_alert "WARNING" "$endpoint_name" "Endpoint $status: $url (${failure_count} consecutive failures)"
+            fi
+        fi
+        
+        LAST_STATUS["$failure_key"]="$status"
+        log_info "Endpoint $endpoint_name: $status (failures: $failure_count)"
+    done
+    
+    # Check database
+    local db_failure_key="database"
+    check_database_health
+    local db_result=$?
+    
+    case $db_result in
+        0)
+            FAILURE_COUNT["$db_failure_key"]=0
+            log_info "Database: HEALTHY"
+            ;;
+        *)
+            ((FAILURE_COUNT["$db_failure_key"]=${FAILURE_COUNT["$db_failure_key"]:-0}+1))
+            all_healthy=false
+            local db_failure_count=${FAILURE_COUNT["$db_failure_key"]:-0}
+            
+            if [[ $db_failure_count -ge $ALERT_THRESHOLD ]]; then
+                if [[ "${LAST_STATUS["$db_failure_key"]:-}" != "UNHEALTHY" ]]; then
+                    send_alert "CRITICAL" "database" "Database connection failed (${db_failure_count} consecutive failures)"
+                fi
+            fi
+            
+            LAST_STATUS["$db_failure_key"]="UNHEALTHY"
+            log_error "Database: UNHEALTHY (failures: $db_failure_count)"
+            ;;
+    esac
+    
+    # Check Redis
+    local redis_failure_key="redis"
+    check_redis_health
+    local redis_result=$?
+    
+    case $redis_result in
+        0)
+            FAILURE_COUNT["$redis_failure_key"]=0
+            log_info "Redis: HEALTHY"
+            ;;
+        *)
+            ((FAILURE_COUNT["$redis_failure_key"]=${FAILURE_COUNT["$redis_failure_key"]:-0}+1))
+            all_healthy=false
+            local redis_failure_count=${FAILURE_COUNT["$redis_failure_key"]:-0}
+            
+            if [[ $redis_failure_count -ge $ALERT_THRESHOLD ]]; then
+                if [[ "${LAST_STATUS["$redis_failure_key"]:-}" != "UNHEALTHY" ]]; then
+                    send_alert "WARNING" "redis" "Redis connection failed (${redis_failure_count} consecutive failures)"
+                    
+                    # Attempt Redis recovery
+                    attempt_recovery "redis" "connection_failed"
+                fi
+            fi
+            
+            LAST_STATUS["$redis_failure_key"]="UNHEALTHY"
+            log_error "Redis: UNHEALTHY (failures: $redis_failure_count)"
+            ;;
+    esac
+    
+    # Check system resources
+    if ! check_system_resources; then
+        log_warn "System resources under stress"
+        all_healthy=false
+    fi
+    
+    if $all_healthy; then
+        log_success "All systems healthy"
+    else
+        log_warn "Some systems are unhealthy"
+    fi
+    
+    echo
+}
+
+print_banner() {
+    echo -e "${CYAN}╔══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║                  Citadel Health Monitor                  ║${NC}"
+    echo -e "${CYAN}║                 Continuous Monitoring                    ║${NC}"
+    echo -e "${CYAN}╚══════════════════════════════════════════════════════════╝${NC}"
+    echo
+    echo -e "${BLUE}Monitor Configuration:${NC}"
+    echo "  Check Interval: ${CHECK_INTERVAL}s"
+    echo "  Alert Threshold: $ALERT_THRESHOLD consecutive failures"
+    echo "  Recovery: $([ "$RECOVERY_ENABLED" = "true" ] && echo "Enabled" || echo "Disabled")"
+    echo "  Alerts: $([ -n "$SLACK_WEBHOOK_URL" ] && echo "Slack " || "")$([ -n "$EMAIL_ALERTS" ] && echo "Email" || "")"
+    echo "  Log File: $HEALTH_LOG"
+    echo
+}
+
+show_status() {
+    echo -e "${BLUE}📊 Current Health Status:${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    # Services
+    echo -e "${CYAN}Services:${NC}"
+    for service in "${SERVICES[@]}"; do
+        local failure_key="service_$service"
+        local status="${LAST_STATUS["$failure_key"]:-"UNKNOWN"}"
+        local failures=${FAILURE_COUNT["$failure_key"]:-0}
+        
+        case "$status" in
+            "HEALTHY") echo -e "  ✅ $service: $status" ;;
+            "UNHEALTHY") echo -e "  ❌ $service: $status (failures: $failures)" ;;
+            "NOT_FOUND") echo -e "  ⚠️  $service: $status" ;;
+            *) echo -e "  ❓ $service: $status" ;;
+        esac
+    done
+    
+    # Endpoints
+    echo -e "\n${CYAN}Endpoints:${NC}"
+    for endpoint in "${!ENDPOINTS[@]}"; do
+        local failure_key="endpoint_$endpoint"
+        local status="${LAST_STATUS["$failure_key"]:-"UNKNOWN"}"
+        local failures=${FAILURE_COUNT["$failure_key"]:-0}
+        
+        case "$status" in
+            "HEALTHY") echo -e "  ✅ $endpoint: $status" ;;
+            "UNHEALTHY") echo -e "  ❌ $endpoint: $status (failures: $failures)" ;;
+            "UNAVAILABLE") echo -e "  ⚠️  $endpoint: $status" ;;
+            *) echo -e "  ❓ $endpoint: $status" ;;
+        esac
+    done
+    
+    # External services
+    echo -e "\n${CYAN}External Services:${NC}"
+    local db_status="${LAST_STATUS["database"]:-"UNKNOWN"}"
+    local redis_status="${LAST_STATUS["redis"]:-"UNKNOWN"}"
+    
+    case "$db_status" in
+        "HEALTHY") echo -e "  ✅ Database: $db_status" ;;
+        "UNHEALTHY") echo -e "  ❌ Database: $db_status (failures: ${FAILURE_COUNT["database"]:-0})" ;;
+        *) echo -e "  ❓ Database: $db_status" ;;
+    esac
+    
+    case "$redis_status" in
+        "HEALTHY") echo -e "  ✅ Redis: $redis_status" ;;
+        "UNHEALTHY") echo -e "  ❌ Redis: $redis_status (failures: ${FAILURE_COUNT["redis"]:-0})" ;;
+        *) echo -e "  ❓ Redis: $redis_status" ;;
+    esac
+    
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+# Main monitoring loop
+monitor_loop() {
+    print_banner
+    log_info "Starting Citadel Health Monitor"
+    
+    # Trap for graceful shutdown
+    trap 'log_info "Shutting down health monitor"; exit 0' INT TERM
+    
+    while true; do
+        run_health_check
+        sleep "$CHECK_INTERVAL"
+    done
+}
+
+# Command line options
+case "${1:-monitor}" in
+    "monitor")
+        monitor_loop
+        ;;
+    "check")
+        print_banner
+        run_health_check
+        ;;
+    "status")
+        print_banner
+        show_status
+        ;;
+    "test-alert")
+        send_alert "INFO" "test" "Test alert from health monitor"
+        echo "Test alert sent"
+        ;;
+    *)
+        echo "Usage: $0 {monitor|check|status|test-alert}"
+        echo
+        echo "Commands:"
+        echo "  monitor     - Start continuous monitoring (default)"
+        echo "  check       - Run single health check"
+        echo "  status      - Show current status"
+        echo "  test-alert  - Send test alert"
+        exit 1
+        ;;
+esac

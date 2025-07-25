@@ -1,0 +1,259 @@
+#!/bin/bash
+
+# Test webhook integration with external Alertmanager
+# This script simulates alerts being sent from Alertmanager to test the webhook endpoint
+
+GATEWAY_URL="http://localhost:8000"
+WEBHOOK_ENDPOINT="${GATEWAY_URL}/webhooks/alerts"
+
+echo "Testing Citadel Webhook Integration with External Alertmanager"
+echo "=============================================================="
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to test webhook endpoint
+test_webhook() {
+    local payload="$1"
+    local description="$2"
+    
+    echo -e "\n${BLUE}Testing: ${description}${NC}"
+    echo "Sending payload to: $WEBHOOK_ENDPOINT"
+    
+    response=$(curl -s -w "\nHTTP_CODE:%{http_code}" \
+        -X POST \
+        -H "Content-Type: application/json" \
+        -d "$payload" \
+        "$WEBHOOK_ENDPOINT")
+    
+    http_code=$(echo "$response" | grep "HTTP_CODE:" | cut -d: -f2)
+    response_body=$(echo "$response" | sed '/HTTP_CODE:/d')
+    
+    if [ "$http_code" = "200" ]; then
+        echo -e "${GREEN}✓ Success (HTTP $http_code)${NC}"
+        echo "Response: $response_body"
+    else
+        echo -e "${RED}✗ Failed (HTTP $http_code)${NC}"
+        echo "Response: $response_body"
+    fi
+}
+
+# Test 1: Critical Service Down Alert
+echo -e "\n${YELLOW}=== Test 1: Critical Service Down Alert ===${NC}"
+SERVICE_DOWN_PAYLOAD='{
+  "receiver": "citadel-hx-server-02-webhook",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "ServiceDown",
+        "service": "citadel-gateway",
+        "cluster": "hx-server-02",
+        "instance": "192.168.10.31:8000",
+        "severity": "critical"
+      },
+      "annotations": {
+        "summary": "Citadel Gateway service is down",
+        "description": "The Citadel Gateway service on HX-Server-02 has been down for more than 5 minutes",
+        "runbook_url": "https://wiki.company.com/runbooks/citadel-gateway-down"
+      },
+      "startsAt": "2024-01-20T10:30:00Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://192.168.10.37:9090/graph?g0.expr=up%7Bjob%3D%22citadel-gateway%22%7D%20%3D%3D%200",
+      "fingerprint": "abc123def456"
+    }
+  ],
+  "groupLabels": {
+    "alertname": "ServiceDown",
+    "cluster": "hx-server-02"
+  },
+  "commonLabels": {
+    "alertname": "ServiceDown",
+    "cluster": "hx-server-02"
+  },
+  "commonAnnotations": {},
+  "externalURL": "http://192.168.10.37:9093",
+  "version": "4",
+  "groupKey": "{}:{alertname=\"ServiceDown\", cluster=\"hx-server-02\"}",
+  "truncatedAlerts": 0
+}'
+
+test_webhook "$SERVICE_DOWN_PAYLOAD" "Critical Service Down Alert"
+
+# Test 2: Warning High CPU Usage Alert
+echo -e "\n${YELLOW}=== Test 2: Warning High CPU Usage Alert ===${NC}"
+HIGH_CPU_PAYLOAD='{
+  "receiver": "citadel-hx-server-02-webhook",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "HighCPUUsage",
+        "service": "system",
+        "cluster": "hx-server-02",
+        "instance": "192.168.10.31",
+        "severity": "warning"
+      },
+      "annotations": {
+        "summary": "High CPU usage detected on HX-Server-02",
+        "description": "CPU usage has been above 85% for more than 10 minutes",
+        "runbook_url": "https://wiki.company.com/runbooks/high-cpu-usage"
+      },
+      "startsAt": "2024-01-20T10:35:00Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://192.168.10.37:9090/graph?g0.expr=cpu_usage%20%3E%200.85",
+      "fingerprint": "def456ghi789"
+    }
+  ],
+  "groupLabels": {
+    "alertname": "HighCPUUsage",
+    "cluster": "hx-server-02"
+  },
+  "commonLabels": {
+    "alertname": "HighCPUUsage",
+    "cluster": "hx-server-02"
+  },
+  "commonAnnotations": {},
+  "externalURL": "http://192.168.10.37:9093",
+  "version": "4",
+  "groupKey": "{}:{alertname=\"HighCPUUsage\", cluster=\"hx-server-02\"}",
+  "truncatedAlerts": 0
+}'
+
+test_webhook "$HIGH_CPU_PAYLOAD" "Warning High CPU Usage Alert"
+
+# Test 3: Critical Disk Space Low Alert
+echo -e "\n${YELLOW}=== Test 3: Critical Disk Space Low Alert ===${NC}"
+DISK_SPACE_PAYLOAD='{
+  "receiver": "citadel-hx-server-02-webhook",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "DiskSpaceLow",
+        "service": "system",
+        "cluster": "hx-server-02",
+        "instance": "192.168.10.31",
+        "severity": "critical",
+        "device": "/dev/sda1",
+        "mountpoint": "/"
+      },
+      "annotations": {
+        "summary": "Critical disk space on HX-Server-02",
+        "description": "Disk space on / is below 5% (currently 3%)",
+        "runbook_url": "https://wiki.company.com/runbooks/disk-space-low"
+      },
+      "startsAt": "2024-01-20T10:40:00Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://192.168.10.37:9090/graph?g0.expr=disk_space_free%20%3C%200.05",
+      "fingerprint": "ghi789jkl012"
+    }
+  ],
+  "groupLabels": {
+    "alertname": "DiskSpaceLow",
+    "cluster": "hx-server-02"
+  },
+  "commonLabels": {
+    "alertname": "DiskSpaceLow",
+    "cluster": "hx-server-02"
+  },
+  "commonAnnotations": {},
+  "externalURL": "http://192.168.10.37:9093",
+  "version": "4",
+  "groupKey": "{}:{alertname=\"DiskSpaceLow\", cluster=\"hx-server-02\"}",
+  "truncatedAlerts": 0
+}'
+
+test_webhook "$DISK_SPACE_PAYLOAD" "Critical Disk Space Low Alert"
+
+# Test 4: Resolved Alert
+echo -e "\n${YELLOW}=== Test 4: Resolved Alert ===${NC}"
+RESOLVED_PAYLOAD='{
+  "receiver": "citadel-hx-server-02-webhook",
+  "status": "resolved",
+  "alerts": [
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "ServiceDown",
+        "service": "citadel-gateway",
+        "cluster": "hx-server-02",
+        "instance": "192.168.10.31:8000",
+        "severity": "critical"
+      },
+      "annotations": {
+        "summary": "Citadel Gateway service is down",
+        "description": "The Citadel Gateway service on HX-Server-02 has been down for more than 5 minutes",
+        "runbook_url": "https://wiki.company.com/runbooks/citadel-gateway-down"
+      },
+      "startsAt": "2024-01-20T10:30:00Z",
+      "endsAt": "2024-01-20T10:45:00Z",
+      "generatorURL": "http://192.168.10.37:9090/graph?g0.expr=up%7Bjob%3D%22citadel-gateway%22%7D%20%3D%3D%200",
+      "fingerprint": "abc123def456"
+    }
+  ],
+  "groupLabels": {
+    "alertname": "ServiceDown",
+    "cluster": "hx-server-02"
+  },
+  "commonLabels": {
+    "alertname": "ServiceDown",
+    "cluster": "hx-server-02"
+  },
+  "commonAnnotations": {},
+  "externalURL": "http://192.168.10.37:9093",
+  "version": "4",
+  "groupKey": "{}:{alertname=\"ServiceDown\", cluster=\"hx-server-02\"}",
+  "truncatedAlerts": 0
+}'
+
+test_webhook "$RESOLVED_PAYLOAD" "Resolved Alert"
+
+# Test 5: Check Active Alerts
+echo -e "\n${YELLOW}=== Test 5: Check Active Alerts ===${NC}"
+echo "Getting active alerts from: ${GATEWAY_URL}/webhooks/alerts/active"
+curl -s -X GET "${GATEWAY_URL}/webhooks/alerts/active" | jq . 2>/dev/null || curl -s -X GET "${GATEWAY_URL}/webhooks/alerts/active"
+
+# Test 6: Check Alert History
+echo -e "\n${YELLOW}=== Test 6: Check Alert History ===${NC}"
+echo "Getting alert history from: ${GATEWAY_URL}/webhooks/alerts/history"
+curl -s -X GET "${GATEWAY_URL}/webhooks/alerts/history?limit=10" | jq . 2>/dev/null || curl -s -X GET "${GATEWAY_URL}/webhooks/alerts/history?limit=10"
+
+# Test 7: Check Alert Statistics
+echo -e "\n${YELLOW}=== Test 7: Check Alert Statistics ===${NC}"
+echo "Getting alert statistics from: ${GATEWAY_URL}/webhooks/alerts/stats"
+curl -s -X GET "${GATEWAY_URL}/webhooks/alerts/stats" | jq . 2>/dev/null || curl -s -X GET "${GATEWAY_URL}/webhooks/alerts/stats"
+
+echo -e "\n${GREEN}=== Webhook Integration Tests Complete ===${NC}"
+echo ""
+echo -e "${BLUE}Integration Steps:${NC}"
+echo "1. Configure Alertmanager at 192.168.10.37:9093 to send webhooks to:"
+echo "   http://192.168.10.31:8000/webhooks/alerts"
+echo ""
+echo "2. Add webhook receiver to alertmanager.yml:"
+echo "   receivers:"
+echo "     - name: 'citadel-hx-server-02-webhook'"
+echo "       webhook_configs:"
+echo "         - url: 'http://192.168.10.31:8000/webhooks/alerts'"
+echo "           send_resolved: true"
+echo ""
+echo "3. Route HX-Server-02 alerts to this webhook:"
+echo "   route:"
+echo "     routes:"
+echo "       - match:"
+echo "           cluster: hx-server-02"
+echo "         receiver: 'citadel-hx-server-02-webhook'"
+echo ""
+echo -e "${BLUE}Webhook Endpoints:${NC}"
+echo "• POST /webhooks/alerts          - Receive alerts from Alertmanager"
+echo "• GET  /webhooks/alerts/active   - View currently active alerts"
+echo "• GET  /webhooks/alerts/history  - View alert history"
+echo "• GET  /webhooks/alerts/stats    - View alert statistics"
+echo "• DELETE /webhooks/alerts/history - Clear alert history"

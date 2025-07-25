@@ -1,0 +1,590 @@
+#!/bin/bash
+# Citadel Log Manager Script
+# Centralized log management, rotation, and analysis
+
+set -euo pipefail
+
+# Configuration
+CITADEL_HOME="/opt/citadel"
+LOG_BASE_DIR="/opt/citadel/logs"
+RETENTION_DAYS=30
+MAX_LOG_SIZE="100M"
+ARCHIVE_DIR="$LOG_BASE_DIR/archive"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Log directories and files
+declare -A LOG_PATHS=(
+    ["gateway"]="$LOG_BASE_DIR/gateway/gateway.log"
+    ["health"]="$LOG_BASE_DIR/monitoring/health-check.log"
+    ["health-monitor"]="$LOG_BASE_DIR/monitoring/health-monitor.log"
+    ["service-manager"]="$LOG_BASE_DIR/monitoring/service-management.log"
+    ["backup"]="$LOG_BASE_DIR/backup/backup.log"
+    ["deployment"]="$LOG_BASE_DIR/deployment/deployment.log"
+    ["error"]="$LOG_BASE_DIR/errors/error.log"
+    ["access"]="$LOG_BASE_DIR/access/access.log"
+    ["audit"]="$LOG_BASE_DIR/audit/audit.log"
+)
+
+# System service logs
+SYSTEM_SERVICES=(
+    "postgresql"
+    "redis-server"
+    "ollama"
+    "nginx"
+    "citadel-gateway"
+)
+
+print_header() {
+    echo -e "${CYAN}╔══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║                   Citadel Log Manager                    ║${NC}"
+    echo -e "${CYAN}║                Log Analysis & Management                 ║${NC}"
+    echo -e "${CYAN}╚══════════════════════════════════════════════════════════╝${NC}"
+    echo
+}
+
+show_usage() {
+    echo -e "${BLUE}Usage: $0 {view|tail|search|rotate|archive|clean|analyze|summary} [options]${NC}"
+    echo
+    echo -e "${YELLOW}Commands:${NC}"
+    echo "  view <log>        - View log file with pagination"
+    echo "  tail <log> [n]    - Follow log file (last n lines)"
+    echo "  search <pattern>  - Search across all logs"
+    echo "  rotate           - Rotate all log files"
+    echo "  archive          - Archive old logs"
+    echo "  clean            - Clean up old logs (${RETENTION_DAYS} days)"
+    echo "  analyze <log>    - Analyze log patterns"
+    echo "  summary          - Show log summary"
+    echo "  errors           - Show recent errors across all logs"
+    echo
+    echo -e "${YELLOW}Available Logs:${NC}"
+    for log_name in "${!LOG_PATHS[@]}"; do
+        echo "  - $log_name"
+    done
+    echo
+    echo -e "${YELLOW}System Services:${NC}"
+    for service in "${SYSTEM_SERVICES[@]}"; do
+        echo "  - $service"
+    done
+    echo
+    echo -e "${YELLOW}Examples:${NC}"
+    echo "  $0 tail gateway 100        # Follow gateway log, last 100 lines"
+    echo "  $0 search \"ERROR\"          # Search for errors in all logs"
+    echo "  $0 view postgresql         # View PostgreSQL system log"
+    echo "  $0 analyze gateway         # Analyze gateway log patterns"
+}
+
+log_info() {
+    echo -e "${BLUE}ℹ️  $1${NC}"
+}
+
+log_warn() {
+    echo -e "${YELLOW}⚠️  $1${NC}"
+}
+
+log_error() {
+    echo -e "${RED}❌ $1${NC}"
+}
+
+log_success() {
+    echo -e "${GREEN}✅ $1${NC}"
+}
+
+ensure_log_dirs() {
+    local dirs=(
+        "$LOG_BASE_DIR/gateway"
+        "$LOG_BASE_DIR/monitoring"
+        "$LOG_BASE_DIR/backup"
+        "$LOG_BASE_DIR/deployment"
+        "$LOG_BASE_DIR/errors"
+        "$LOG_BASE_DIR/access"
+        "$LOG_BASE_DIR/audit"
+        "$ARCHIVE_DIR"
+    )
+    
+    for dir in "${dirs[@]}"; do
+        mkdir -p "$dir"
+    done
+}
+
+get_log_path() {
+    local log_name="$1"
+    
+    # Check if it's a known application log
+    if [[ -n "${LOG_PATHS[$log_name]:-}" ]]; then
+        echo "${LOG_PATHS[$log_name]}"
+        return 0
+    fi
+    
+    # Check if it's a system service
+    for service in "${SYSTEM_SERVICES[@]}"; do
+        if [[ "$log_name" == "$service" ]]; then
+            echo "systemd:$service"
+            return 0
+        fi
+    done
+    
+    return 1
+}
+
+view_log() {
+    local log_name="$1"
+    local path
+    
+    if ! path=$(get_log_path "$log_name"); then
+        log_error "Unknown log: $log_name"
+        return 1
+    fi
+    
+    if [[ "$path" == systemd:* ]]; then
+        local service="${path#systemd:}"
+        log_info "Viewing system log for service: $service"
+        sudo journalctl -u "$service" --no-pager | less
+    else
+        if [[ -f "$path" ]]; then
+            log_info "Viewing log: $path"
+            less "$path"
+        else
+            log_warn "Log file not found: $path"
+            return 1
+        fi
+    fi
+}
+
+tail_log() {
+    local log_name="$1"
+    local lines="${2:-50}"
+    local path
+    
+    if ! path=$(get_log_path "$log_name"); then
+        log_error "Unknown log: $log_name"
+        return 1
+    fi
+    
+    if [[ "$path" == systemd:* ]]; then
+        local service="${path#systemd:}"
+        log_info "Following system log for service: $service (last $lines lines)"
+        sudo journalctl -u "$service" -f -n "$lines"
+    else
+        if [[ -f "$path" ]]; then
+            log_info "Following log: $path (last $lines lines)"
+            tail -f -n "$lines" "$path"
+        else
+            log_warn "Log file not found: $path"
+            return 1
+        fi
+    fi
+}
+
+search_logs() {
+    local pattern="$1"
+    local case_insensitive="${2:-true}"
+    local grep_args="-n --color=always"
+    
+    if [[ "$case_insensitive" == "true" ]]; then
+        grep_args="$grep_args -i"
+    fi
+    
+    log_info "Searching for pattern: $pattern"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    local found=false
+    
+    # Search application logs
+    for log_name in "${!LOG_PATHS[@]}"; do
+        local log_path="${LOG_PATHS[$log_name]}"
+        if [[ -f "$log_path" ]]; then
+            local matches=$(grep -c $grep_args "$pattern" "$log_path" 2>/dev/null || echo "0")
+            if [[ "$matches" -gt 0 ]]; then
+                echo -e "${CYAN}=== $log_name ($log_path) - $matches matches ===${NC}"
+                grep $grep_args "$pattern" "$log_path" | head -20
+                echo
+                found=true
+            fi
+        fi
+    done
+    
+    # Search system service logs
+    for service in "${SYSTEM_SERVICES[@]}"; do
+        local matches=$(sudo journalctl -u "$service" --no-pager | grep -c $grep_args "$pattern" 2>/dev/null || echo "0")
+        if [[ "$matches" -gt 0 ]]; then
+            echo -e "${CYAN}=== $service (systemd) - $matches matches ===${NC}"
+            sudo journalctl -u "$service" --no-pager | grep $grep_args "$pattern" | head -20
+            echo
+            found=true
+        fi
+    done
+    
+    if ! $found; then
+        log_warn "No matches found for pattern: $pattern"
+    fi
+}
+
+rotate_logs() {
+    local timestamp=$(date '+%Y%m%d_%H%M%S')
+    
+    log_info "Starting log rotation..."
+    
+    for log_name in "${!LOG_PATHS[@]}"; do
+        local log_path="${LOG_PATHS[$log_name]}"
+        
+        if [[ -f "$log_path" ]]; then
+            local size=$(stat -f%z "$log_path" 2>/dev/null || stat -c%s "$log_path" 2>/dev/null || echo "0")
+            local size_mb=$((size / 1024 / 1024))
+            
+            if [[ $size_mb -gt 100 ]]; then
+                local archived_name="${log_path}.${timestamp}"
+                log_info "Rotating $log_name ($size_mb MB): $log_path -> $archived_name"
+                
+                cp "$log_path" "$archived_name"
+                > "$log_path"  # Truncate original file
+                gzip "$archived_name"
+                
+                log_success "Rotated $log_name"
+            else
+                log_info "Skipping $log_name ($size_mb MB, under threshold)"
+            fi
+        fi
+    done
+    
+    log_success "Log rotation completed"
+}
+
+archive_logs() {
+    local archive_date=$(date '+%Y%m%d')
+    local archive_subdir="$ARCHIVE_DIR/$archive_date"
+    
+    log_info "Archiving logs to: $archive_subdir"
+    mkdir -p "$archive_subdir"
+    
+    local archived_count=0
+    
+    for log_name in "${!LOG_PATHS[@]}"; do
+        local log_path="${LOG_PATHS[$log_name]}"
+        local log_dir=$(dirname "$log_path")
+        
+        # Archive rotated logs (*.gz files)
+        if find "$log_dir" -name "*.gz" -type f 2>/dev/null | grep -q .; then
+            log_info "Archiving rotated logs for $log_name"
+            find "$log_dir" -name "*.gz" -type f -exec mv {} "$archive_subdir/" \;
+            ((archived_count++))
+        fi
+    done
+    
+    if [[ $archived_count -gt 0 ]]; then
+        log_success "Archived logs from $archived_count categories"
+        
+        # Create archive manifest
+        {
+            echo "Archive created: $(date)"
+            echo "Archive location: $archive_subdir"
+            echo "Files archived:"
+            ls -la "$archive_subdir"
+        } > "$archive_subdir/manifest.txt"
+    else
+        log_warn "No logs found to archive"
+        rmdir "$archive_subdir" 2>/dev/null || true
+    fi
+}
+
+clean_logs() {
+    log_info "Cleaning logs older than $RETENTION_DAYS days..."
+    
+    local cleaned_count=0
+    
+    # Clean archived files
+    if [[ -d "$ARCHIVE_DIR" ]]; then
+        local old_archives=$(find "$ARCHIVE_DIR" -type f -mtime +$RETENTION_DAYS 2>/dev/null || true)
+        if [[ -n "$old_archives" ]]; then
+            echo "$old_archives" | while read -r archive; do
+                log_info "Removing old archive: $archive"
+                rm -f "$archive"
+                ((cleaned_count++))
+            done
+        fi
+    fi
+    
+    # Clean old rotated logs
+    for log_name in "${!LOG_PATHS[@]}"; do
+        local log_path="${LOG_PATHS[$log_name]}"
+        local log_dir=$(dirname "$log_path")
+        
+        local old_logs=$(find "$log_dir" -name "*.gz" -mtime +$RETENTION_DAYS 2>/dev/null || true)
+        if [[ -n "$old_logs" ]]; then
+            echo "$old_logs" | while read -r old_log; do
+                log_info "Removing old log: $old_log"
+                rm -f "$old_log"
+                ((cleaned_count++))
+            done
+        fi
+    done
+    
+    log_success "Cleaned $cleaned_count old log files"
+}
+
+analyze_log() {
+    local log_name="$1"
+    local path
+    
+    if ! path=$(get_log_path "$log_name"); then
+        log_error "Unknown log: $log_name"
+        return 1
+    fi
+    
+    log_info "Analyzing log: $log_name"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    if [[ "$path" == systemd:* ]]; then
+        local service="${path#systemd:}"
+        
+        echo -e "${CYAN}Service Log Analysis: $service${NC}"
+        echo
+        
+        # Basic stats
+        local total_lines=$(sudo journalctl -u "$service" --no-pager | wc -l)
+        echo "Total log entries: $total_lines"
+        
+        # Error analysis
+        echo -e "\n${YELLOW}Error Analysis:${NC}"
+        local errors=$(sudo journalctl -u "$service" --no-pager | grep -i "error" | wc -l)
+        local warnings=$(sudo journalctl -u "$service" --no-pager | grep -i "warning\|warn" | wc -l)
+        echo "Errors: $errors"
+        echo "Warnings: $warnings"
+        
+        # Recent activity
+        echo -e "\n${YELLOW}Recent Activity (last 10 entries):${NC}"
+        sudo journalctl -u "$service" -n 10 --no-pager
+        
+    else
+        if [[ ! -f "$path" ]]; then
+            log_warn "Log file not found: $path"
+            return 1
+        fi
+        
+        echo -e "${CYAN}Log File Analysis: $path${NC}"
+        echo
+        
+        # File stats
+        local size=$(stat -f%z "$path" 2>/dev/null || stat -c%s "$path" 2>/dev/null || echo "0")
+        local size_mb=$((size / 1024 / 1024))
+        local lines=$(wc -l < "$path")
+        local modified=$(stat -f%Sm "$path" 2>/dev/null || stat -c%y "$path" 2>/dev/null || echo "Unknown")
+        
+        echo "File size: ${size_mb} MB"
+        echo "Total lines: $lines"
+        echo "Last modified: $modified"
+        echo
+        
+        # Log level analysis
+        echo -e "${YELLOW}Log Level Analysis:${NC}"
+        local info_count=$(grep -c "\[INFO\]" "$path" 2>/dev/null || echo "0")
+        local warn_count=$(grep -c "\[WARN\]" "$path" 2>/dev/null || echo "0")
+        local error_count=$(grep -c "\[ERROR\]" "$path" 2>/dev/null || echo "0")
+        local debug_count=$(grep -c "\[DEBUG\]" "$path" 2>/dev/null || echo "0")
+        
+        echo "INFO: $info_count"
+        echo "WARN: $warn_count"
+        echo "ERROR: $error_count"
+        echo "DEBUG: $debug_count"
+        
+        # Time-based analysis
+        echo -e "\n${YELLOW}Recent Activity (last 24 hours):${NC}"
+        local yesterday=$(date -d "yesterday" '+%Y-%m-%d' 2>/dev/null || date -v-1d '+%Y-%m-%d' 2>/dev/null || echo "")
+        if [[ -n "$yesterday" ]]; then
+            local recent_lines=$(grep "$yesterday\|$(date '+%Y-%m-%d')" "$path" 2>/dev/null | wc -l || echo "0")
+            echo "Log entries: $recent_lines"
+        fi
+        
+        # Top error patterns
+        echo -e "\n${YELLOW}Top Error Patterns:${NC}"
+        grep -i "error\|exception\|failed" "$path" 2>/dev/null | \
+            awk '{for(i=1;i<=NF;i++) if($i ~ /error|exception|failed/i) print $i}' | \
+            sort | uniq -c | sort -nr | head -5 || echo "No error patterns found"
+        
+        # Recent errors
+        echo -e "\n${YELLOW}Recent Errors (last 5):${NC}"
+        grep -i "error\|exception\|failed" "$path" 2>/dev/null | tail -5 || echo "No recent errors found"
+    fi
+}
+
+show_summary() {
+    log_info "Log Summary Report"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    # Application logs summary
+    echo -e "${CYAN}Application Logs:${NC}"
+    printf "%-20s %-15s %-10s %-15s\n" "LOG" "SIZE" "LINES" "LAST MODIFIED"
+    echo "────────────────────────────────────────────────────────────────"
+    
+    for log_name in "${!LOG_PATHS[@]}"; do
+        local log_path="${LOG_PATHS[$log_name]}"
+        if [[ -f "$log_path" ]]; then
+            local size=$(stat -f%z "$log_path" 2>/dev/null || stat -c%s "$log_path" 2>/dev/null || echo "0")
+            local size_mb=$((size / 1024 / 1024))
+            local lines=$(wc -l < "$log_path" 2>/dev/null || echo "0")
+            local modified=$(stat -f%Sm -t%m/%d "$log_path" 2>/dev/null || stat -c%y "$log_path" | cut -d' ' -f1 2>/dev/null || echo "Unknown")
+            
+            printf "%-20s %-15s %-10s %-15s\n" "$log_name" "${size_mb}MB" "$lines" "$modified"
+        else
+            printf "%-20s %-15s %-10s %-15s\n" "$log_name" "Missing" "0" "N/A"
+        fi
+    done
+    
+    echo
+    
+    # System services summary
+    echo -e "${CYAN}System Service Status:${NC}"
+    printf "%-20s %-15s %-20s\n" "SERVICE" "STATUS" "RECENT ERRORS"
+    echo "─────────────────────────────────────────────────────────────"
+    
+    for service in "${SYSTEM_SERVICES[@]}"; do
+        local status="Unknown"
+        if systemctl is-active --quiet "$service" 2>/dev/null; then
+            status="Running"
+        elif systemctl is-failed --quiet "$service" 2>/dev/null; then
+            status="Failed"
+        else
+            status="Stopped"
+        fi
+        
+        local recent_errors=$(sudo journalctl -u "$service" --since "24 hours ago" --no-pager 2>/dev/null | grep -c -i "error" || echo "0")
+        
+        printf "%-20s %-15s %-20s\n" "$service" "$status" "$recent_errors"
+    done
+    
+    echo
+    
+    # Disk usage
+    echo -e "${CYAN}Log Directory Disk Usage:${NC}"
+    du -sh "$LOG_BASE_DIR"/* 2>/dev/null | sort -hr || echo "No log directories found"
+    
+    echo
+    echo -e "${CYAN}Archive Status:${NC}"
+    if [[ -d "$ARCHIVE_DIR" ]]; then
+        local archive_count=$(find "$ARCHIVE_DIR" -type f 2>/dev/null | wc -l)
+        local archive_size=$(du -sh "$ARCHIVE_DIR" 2>/dev/null | cut -f1)
+        echo "Archived files: $archive_count"
+        echo "Archive size: $archive_size"
+    else
+        echo "No archives found"
+    fi
+}
+
+show_errors() {
+    log_info "Recent Errors Across All Systems"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    # Application log errors
+    echo -e "${CYAN}Application Log Errors (last 24 hours):${NC}"
+    local found_errors=false
+    
+    for log_name in "${!LOG_PATHS[@]}"; do
+        local log_path="${LOG_PATHS[$log_name]}"
+        if [[ -f "$log_path" ]]; then
+            local yesterday=$(date -d "yesterday" '+%Y-%m-%d' 2>/dev/null || date -v-1d '+%Y-%m-%d' 2>/dev/null || echo "")
+            local today=$(date '+%Y-%m-%d')
+            
+            local errors=""
+            if [[ -n "$yesterday" ]]; then
+                errors=$(grep -i "error\|exception\|failed" "$log_path" 2>/dev/null | grep -E "$yesterday|$today" | tail -5)
+            else
+                errors=$(grep -i "error\|exception\|failed" "$log_path" 2>/dev/null | tail -5)
+            fi
+            
+            if [[ -n "$errors" ]]; then
+                echo -e "\n${YELLOW}$log_name:${NC}"
+                echo "$errors"
+                found_errors=true
+            fi
+        fi
+    done
+    
+    # System service errors
+    echo -e "\n${CYAN}System Service Errors (last 24 hours):${NC}"
+    for service in "${SYSTEM_SERVICES[@]}"; do
+        local errors=$(sudo journalctl -u "$service" --since "24 hours ago" --no-pager 2>/dev/null | grep -i "error\|failed" | tail -3)
+        if [[ -n "$errors" ]]; then
+            echo -e "\n${YELLOW}$service:${NC}"
+            echo "$errors"
+            found_errors=true
+        fi
+    done
+    
+    if ! $found_errors; then
+        log_success "No recent errors found!"
+    fi
+}
+
+# Ensure log directories exist
+ensure_log_dirs
+
+# Main command processing
+main() {
+    local command="${1:-}"
+    
+    print_header
+    
+    case "$command" in
+        "view")
+            if [[ -z "${2:-}" ]]; then
+                log_error "Please specify a log name"
+                show_usage
+                exit 1
+            fi
+            view_log "$2"
+            ;;
+        "tail")
+            if [[ -z "${2:-}" ]]; then
+                log_error "Please specify a log name"
+                show_usage
+                exit 1
+            fi
+            tail_log "$2" "${3:-50}"
+            ;;
+        "search")
+            if [[ -z "${2:-}" ]]; then
+                log_error "Please specify a search pattern"
+                show_usage
+                exit 1
+            fi
+            search_logs "$2"
+            ;;
+        "rotate")
+            rotate_logs
+            ;;
+        "archive")
+            archive_logs
+            ;;
+        "clean")
+            clean_logs
+            ;;
+        "analyze")
+            if [[ -z "${2:-}" ]]; then
+                log_error "Please specify a log name"
+                show_usage
+                exit 1
+            fi
+            analyze_log "$2"
+            ;;
+        "summary")
+            show_summary
+            ;;
+        "errors")
+            show_errors
+            ;;
+        *)
+            show_usage
+            exit 1
+            ;;
+    esac
+}
+
+# Run main function
+main "$@"

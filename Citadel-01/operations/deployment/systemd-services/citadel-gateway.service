@@ -1,0 +1,67 @@
+[Unit]
+Description=Citadel LLM API Gateway - Production Service
+Documentation=https://citadel.local/docs
+After=network-online.target ollama.service redis-server.service
+Wants=network-online.target
+Requires=ollama.service redis-server.service
+BindsTo=ollama.service
+
+[Service]
+Type=exec
+User=agent0
+Group=citadel
+WorkingDirectory=/opt/citadel
+
+# Environment Configuration
+Environment="CITADEL_HOME=/opt/citadel"
+Environment="CITADEL_ENV=production"
+Environment="PYTHONPATH=/opt/citadel/src"
+Environment="PATH=/opt/citadel/citadel_venv/bin:/usr/local/bin:/usr/bin:/bin"
+
+# Security Configuration
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/citadel/logs /opt/citadel/var
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+
+# Resource Limits
+LimitNOFILE=65536
+LimitNPROC=4096
+MemoryMax=8G
+CPUQuota=800%
+
+# Service Configuration
+ExecStartPre=/bin/bash -c 'mkdir -p /opt/citadel/logs/api-gateway /opt/citadel/var/run'
+ExecStartPre=/bin/bash -c 'chown -R agent0:citadel /opt/citadel/logs /opt/citadel/var'
+
+# Production service with proper port configuration
+ExecStart=/opt/citadel/citadel_venv/bin/uvicorn citadel_llm.api.gateway:app --host 0.0.0.0 --port 8002 --workers 8 --log-level info --access-log
+
+# Health check and monitoring
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+TimeoutStartSec=60
+TimeoutStopSec=30
+
+# Restart Configuration
+Restart=always
+RestartSec=5
+StartLimitInterval=600
+StartLimitBurst=5
+
+# Logging Configuration
+StandardOutput=append:/opt/citadel/logs/api-gateway/service.log
+StandardError=append:/opt/citadel/logs/api-gateway/error.log
+SyslogIdentifier=citadel-gateway
+
+# PID File
+PIDFile=/opt/citadel/var/run/citadel-gateway.pid
+
+[Install]
+WantedBy=multi-user.target
+Also=redis-server.service ollama.service

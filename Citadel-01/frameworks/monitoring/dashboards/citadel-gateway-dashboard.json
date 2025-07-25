@@ -1,0 +1,128 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Citadel LLM Gateway - Production Monitoring",
+    "tags": ["citadel", "api", "gateway", "production"],
+    "style": "dark",
+    "timezone": "UTC",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Service Status",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "DOWN", "color": "red"}}, "type": "value"},
+              {"options": {"1": {"text": "UP", "color": "green"}}, "type": "value"}
+            ]
+          }
+        },
+        "targets": [
+          {
+            "expr": "up{job=\"citadel-hx-server-02-gateway\"}",
+            "legendFormat": "Gateway Status"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Request Rate (req/sec)",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"citadel-hx-server-02-gateway\"}[5m])",
+            "legendFormat": "Requests/sec"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Error Rate (%)",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 5}
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"citadel-hx-server-02-gateway\",status=~\"5..\"}[5m]) / rate(http_requests_total{job=\"citadel-hx-server-02-gateway\"}[5m]) * 100",
+            "legendFormat": "Error Rate %"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Response Time (95th percentile)",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"citadel-hx-server-02-gateway\"}[5m]))",
+            "legendFormat": "95th percentile (ms)"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Request Rate Over Time",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"citadel-hx-server-02-gateway\"}[5m])",
+            "legendFormat": "Total Requests/sec"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"citadel-hx-server-02-gateway\",status=~\"2..\"}[5m])",
+            "legendFormat": "Success (2xx)/sec"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"citadel-hx-server-02-gateway\",status=~\"4..\"}[5m])",
+            "legendFormat": "Client Errors (4xx)/sec"
+          },
+          {
+            "expr": "rate(http_requests_total{job=\"citadel-hx-server-02-gateway\",status=~\"5..\"}[5m])",
+            "legendFormat": "Server Errors (5xx)/sec"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Response Time Distribution",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"citadel-hx-server-02-gateway\"}[5m]))",
+            "legendFormat": "50th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"citadel-hx-server-02-gateway\"}[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job=\"citadel-hx-server-02-gateway\"}[5m]))",
+            "legendFormat": "99th percentile"
+          }
+        ]
+      }
+    ]
+  }
+}

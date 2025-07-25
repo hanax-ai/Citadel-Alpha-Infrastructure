@@ -1,0 +1,100 @@
+#!/bin/bash
+
+# Test operational dashboards deployment following implementation guide
+# Based on /opt/citadel/documentation/operational-dashboards-implementation.md
+
+METRICS_SERVER="192.168.10.37"
+GRAFANA_URL="http://${METRICS_SERVER}:3000"
+
+echo "=== Citadel Operational Dashboard Testing ==="
+echo "Following the implementation guide procedures..."
+echo
+
+# Phase 4.1: Connectivity Tests
+echo "🔗 Phase 4.1: Connectivity Tests"
+echo "================================="
+
+echo "Testing connectivity to monitored targets..."
+
+echo "- Testing Citadel Gateway (192.168.10.34:8002):"
+curl -s -o /dev/null -w "Status: %{http_code}, Time: %{time_total}s\n" http://192.168.10.34:8002/health/ || echo "❌ Failed"
+
+echo "- Testing Node Exporter (192.168.10.34:9100):"
+curl -s http://192.168.10.34:9100/metrics | head -5 || echo "❌ Failed"
+
+echo "- Testing PostgreSQL Exporter (192.168.10.35:9187):"
+curl -s http://192.168.10.35:9187/metrics | head -5 || echo "❌ Failed"
+
+echo "- Testing metrics collection from Prometheus:"
+curl -s "http://${METRICS_SERVER}:9090/api/v1/query?query=up" | jq '.data.result[] | {job: .metric.job, instance: .metric.instance, value: .value[1]}' 2>/dev/null || echo "❌ Failed"
+
+echo
+
+# Phase 4.2: Dashboard Validation
+echo "📊 Phase 4.2: Dashboard Validation"
+echo "=================================="
+
+echo "- Testing Grafana health:"
+curl -s "${GRAFANA_URL}/api/health" | jq '.' || echo "❌ Grafana unreachable"
+
+echo "- Verifying dashboards loaded:"
+curl -s -u admin:admin "${GRAFANA_URL}/api/search?query=citadel" | jq '.[] | {title: .title, uid: .uid}' || echo "❌ Dashboard query failed"
+
+echo "- Testing dashboard data source:"
+curl -s -u admin:admin "${GRAFANA_URL}/api/datasources/proxy/1/api/v1/query?query=up" | jq '.data.result | length' || echo "❌ Data source test failed"
+
+echo
+
+# Phase 4.3: Alert Testing
+echo "🚨 Phase 4.3: Alert Testing"
+echo "============================"
+
+echo "- Checking Prometheus targets status:"
+curl -s "http://${METRICS_SERVER}:9090/api/v1/targets" | jq '.data.activeTargets[] | {job: .labels.job, instance: .labels.instance, health: .health}' || echo "❌ Target check failed"
+
+echo "- Checking loaded alert rules:"
+curl -s "http://${METRICS_SERVER}:9090/api/v1/rules" | jq '.data.groups[] | {name: .name, rules: (.rules | length)}' || echo "❌ Rules check failed"
+
+echo "- Checking Alertmanager status:"
+curl -s "http://${METRICS_SERVER}:9093/api/v1/status" | jq '.data' || echo "❌ Alertmanager unreachable"
+
+echo "- Checking active alerts:"
+curl -s "http://${METRICS_SERVER}:9093/api/v1/alerts" | jq '.data[] | {labels: .labels, state: .status.state}' || echo "ℹ️ No active alerts"
+
+echo
+
+# Service Status Check
+echo "🔧 Service Status Check"
+echo "======================="
+
+echo "- Checking service status on metrics server:"
+ssh root@${METRICS_SERVER} "systemctl is-active prometheus grafana-server prometheus-alertmanager prometheus-node-exporter" || echo "❌ Service check failed"
+
+echo "- Checking listening ports:"
+ssh root@${METRICS_SERVER} "netstat -tlnp | grep -E '(9090|3000|9093|9100)'" || echo "❌ Port check failed"
+
+echo
+
+# Success Metrics Validation
+echo "🎯 Success Metrics Validation"
+echo "============================="
+
+echo "Validating operational goals from implementation guide:"
+
+# Test dashboard load time
+start_time=$(date +%s.%N)
+curl -s -u admin:admin "${GRAFANA_URL}/api/dashboards/uid/citadel-overview" > /dev/null
+end_time=$(date +%s.%N)
+load_time=$(echo "$end_time - $start_time" | bc)
+echo "- Dashboard load time: ${load_time}s (Target: < 2s)"
+
+# Test Prometheus query response time
+start_time=$(date +%s.%N)
+curl -s "http://${METRICS_SERVER}:9090/api/v1/query?query=up" > /dev/null
+end_time=$(date +%s.%N)
+query_time=$(echo "$end_time - $start_time" | bc)
+echo "- Prometheus query time: ${query_time}s (Target: < 1s)"
+
+echo
+echo "=== Testing Completed ==="
+echo "Follow up with manual verification in Grafana UI: ${GRAFANA_URL}"

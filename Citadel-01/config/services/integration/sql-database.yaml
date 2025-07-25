@@ -1,0 +1,16 @@
+database:
+  host: 192.168.10.35
+  port: 5432
+  user: citadel_llm_user
+  password: CitadelLLM#2025$SecurePass!
+  database: citadel_llm_db
+  min_connections: 2
+  max_connections: 10
+  timeout: 30
+
+schemas:
+  - mixtral
+  - phi3
+  - openchat
+  - hermes
+

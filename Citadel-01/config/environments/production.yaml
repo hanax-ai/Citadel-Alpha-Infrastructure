@@ -1,0 +1,197 @@
+# Production Environment Configuration
+project:
+  environment: "production"
+  name: "citadel-hx-server-02"
+  version: "2.0.0"
+
+fastapi_gateway:
+  host: "0.0.0.0"
+  port: 8002
+  reload: false
+  workers: 8 # More workers for production scale
+  log_level: "info"
+  access_log: true
+  metrics_enabled: true
+
+ollama_service:
+  host: "localhost"
+  port: 11434
+  log_level: "info"
+  metrics_enabled: true
+
+# Monitoring and Observability Stack
+monitoring:
+  # External monitoring infrastructure
+  external_prometheus_url: "http://192.168.10.37:9090"
+  external_grafana_url: "http://192.168.10.37:3000"
+  external_alertmanager_url: "http://192.168.10.37:9093"
+  external_node_exporter_url: "http://192.168.10.37:9100"
+  
+  # Metrics configuration
+  metrics_endpoint: "/metrics"
+  metrics_interval: 30
+  alerts_webhook: "/webhooks/alerts"
+  
+  # External Prometheus Server
+  prometheus:
+    enabled: false  # Using external Prometheus
+    external_url: "http://192.168.10.37:9090"
+    scrape_config_path: "/opt/citadel/config/monitoring/prometheus/citadel-targets.yml"
+    external_labels:
+      cluster: "hx-server-02"
+      environment: "production"
+      instance: "192.168.10.35"  # This server's IP
+  
+  # External Grafana Server
+  grafana:
+    enabled: false  # Using external Grafana
+    external_url: "http://192.168.10.37:3000"
+    admin_user: "admin"
+    admin_password: "admin"
+    dashboard_import: true
+    dashboard_source: "/opt/citadel/config/monitoring/grafana/dashboards"
+    datasource_config: "/opt/citadel/config/monitoring/grafana/datasources"
+
+  # External Alertmanager
+  alertmanager:
+    enabled: false  # Using external Alertmanager
+    external_url: "http://192.168.10.37:9093"
+    webhook_url: "http://192.168.10.35:8002/webhooks/alerts"  # Citadel webhook endpoint
+    
+  # External Node Exporter
+  node_exporter:
+    enabled: false  # Using external Node Exporter
+    external_url: "http://192.168.10.37:9100"
+
+# Metrics Collection - Exposing metrics for external Prometheus
+metrics:
+  # Citadel application metrics endpoint
+  application_metrics:
+    enabled: true
+    endpoint: "/metrics"
+    port: 8002  # Expose on main gateway port
+    
+  # Local exporters for this server's metrics
+  exporters:
+    # PostgreSQL metrics from remote DB
+    postgres_exporter:
+      enabled: true
+      port: 9187
+      database_url: "postgresql://citadel_llm_user:${DB_PASSWORD}@192.168.10.35:5432/citadel_llm_db"
+      external_scrape: true  # Allow external Prometheus to scrape
+      
+    # Redis metrics from local Redis
+    redis_exporter:
+      enabled: true
+      port: 9121
+      redis_url: "redis://localhost:6379"
+      external_scrape: true
+      
+    # Custom Citadel application metrics
+    citadel_metrics:
+      enabled: true
+      port: 8001
+      metrics_path: "/citadel-metrics"
+      include_gpu: true
+      include_ollama: true
+      include_request_metrics: true
+      external_scrape: true
+      
+    # GPU metrics (if NVIDIA GPU present)
+    gpu_exporter:
+      enabled: true
+      port: 9400
+      external_scrape: true
+      
+  # Metrics to be collected and exposed
+  metric_types:
+    - "http_requests_total"
+    - "http_request_duration_seconds"
+    - "ollama_requests_total"
+    - "ollama_request_duration_seconds"
+    - "ollama_queue_length"
+    - "gpu_utilization_percent"
+    - "gpu_memory_used_bytes"
+    - "gpu_temperature_celsius"
+    - "database_connections_active"
+    - "redis_memory_used_bytes"
+    - "citadel_health_status"
+
+integrations:
+  sql:
+    enabled: true
+    monitoring: true
+  vector:
+    enabled: true
+    monitoring: true
+  metrics:
+    enabled: true
+    prometheus_endpoint: "/metrics"
+    custom_metrics: true
+
+# Security Configuration
+security:
+  tls:
+    enabled: true
+    cert_file: "/opt/citadel/config/secrets/certificates/server.crt"
+    key_file: "/opt/citadel/config/secrets/certificates/server.key"
+  
+  authentication:
+    type: "jwt"
+    secret_key: "${JWT_SECRET_KEY}"
+    token_expiry: "24h"
+  
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 1000
+    burst_size: 100
+
+# Logging Configuration
+logging:
+  level: "info"
+  format: "json"
+  output: "file"
+  rotation:
+    max_size: "100MB"
+    max_files: 10
+    max_age: "30d"
+  structured_logging: true
+  correlation_id: true
+
+# Performance Tuning
+performance:
+  connection_pool:
+    min_size: 5
+    max_size: 20
+    timeout: 30
+  
+  caching:
+    redis_enabled: true
+    cache_ttl: 3600
+    max_memory: "512mb"
+  
+  compression:
+    enabled: true
+    algorithm: "gzip"
+    level: 6
+
+# Backup and Recovery
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention_days: 30
+  storage_path: "/opt/citadel/backups"
+  database_backup: true
+  config_backup: true
+
+# High Availability
+high_availability:
+  load_balancer:
+    enabled: true
+    algorithm: "round_robin"
+    health_check_interval: 30
+  
+  failover:
+    enabled: true
+    timeout: 10
+    max_retries: 3

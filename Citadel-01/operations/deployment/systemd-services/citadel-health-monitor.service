@@ -1,0 +1,42 @@
+[Unit]
+Description=Citadel Health Monitor Service
+Documentation=https://citadel.local/docs/monitoring
+After=network.target postgresql.service redis-server.service ollama.service
+Wants=postgresql.service redis-server.service ollama.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/citadel
+ExecStart=/opt/citadel/bin/citadel-health-monitor monitor
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=always
+RestartSec=10
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=citadel-health-monitor
+
+# Security settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/citadel/logs
+ProtectHome=true
+PrivateTmp=true
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=512M
+CPUQuota=50%
+
+# Environment
+Environment=PYTHONUNBUFFERED=1
+Environment=LOG_LEVEL=INFO
+
+[Install]
+WantedBy=multi-user.target

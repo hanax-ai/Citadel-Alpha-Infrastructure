@@ -1,0 +1,62 @@
+# Citadel AI Operating System - Global Configuration
+project:
+  name: "HXP-Enterprise-LLM-Server"
+  version: "1.0.0"
+  environment: "development" # Default environment
+  server:
+    name: "hx-llm-server-01"
+    ip_address: "192.168.10.29"
+
+paths:
+  home: "/opt/citadel"
+  logs: "/var/log/citadel"
+  active_llm_models: "/mnt/active_llm_models/.ollama" # Ollama's default model path
+  archive_llm_models: "/mnt/archive_llm_models"
+
+gpu:
+  enabled: true
+  driver_version: "575.64.03"
+  cuda_version: "12.9"
+
+# Redis configuration for caching and session management
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0                    # For general services and rate limiting
+  cache_db: 1              # For FastAPI Cache
+  password: null           # Set if Redis AUTH is enabled
+  max_connections: 20
+  timeout: 5
+
+# Middleware configuration
+middleware:
+  logging:
+    enabled: true
+    level: "info"
+    include_body: false
+  
+  metrics:
+    enabled: true
+    detailed: true
+    prometheus_endpoint: "/metrics"
+
+# Monitoring and observability
+monitoring:
+  prometheus:
+    enabled: true
+    host: "192.168.10.37"
+    port: 9090
+    push_gateway: "192.168.10.37:9091"
+  
+  grafana:
+    enabled: true
+    host: "192.168.10.37" 
+    port: 3000
+    admin_user: "admin"
+    admin_password: "admin"
+  
+  alertmanager:
+    enabled: true
+    host: "192.168.10.37"
+    port: 9093
+

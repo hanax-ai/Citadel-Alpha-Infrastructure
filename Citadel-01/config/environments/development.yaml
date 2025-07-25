@@ -1,0 +1,19 @@
+# Development Environment Configuration
+# Overrides or supplements global/service configurations for development purposes
+project:
+  environment: "development"
+
+fastapi_gateway:
+  reload: true # Enable hot-reloading for development
+  workers: 1 # Fewer workers for easier debugging
+
+ollama_service:
+  log_level: "debug" # More verbose logging for development
+
+integrations:
+  sql:
+    enabled: false # Not fully active in early dev
+  vector:
+    enabled: false
+  metrics:
+    enabled: false

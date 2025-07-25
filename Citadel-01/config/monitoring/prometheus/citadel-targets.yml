@@ -1,0 +1,86 @@
+# Prometheus scrape targets for Citadel HX-Server-02
+# This file should be included in the external Prometheus configuration
+# Add this to your prometheus.yml on 192.168.10.37
+
+scrape_configs:
+  # Citadel Gateway API Metrics
+  - job_name: 'citadel-hx-server-02-gateway'
+    static_configs:
+      - targets: ['192.168.10.35:8002']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    labels:
+      cluster: 'hx-server-02'
+      environment: 'production'
+      service: 'citadel-gateway'
+
+  # Citadel Custom Application Metrics
+  - job_name: 'citadel-hx-server-02-app-metrics'
+    static_configs:
+      - targets: ['192.168.10.35:8001']
+    metrics_path: '/citadel-metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    labels:
+      cluster: 'hx-server-02'
+      environment: 'production'
+      service: 'citadel-app'
+
+  # PostgreSQL Database Metrics (via exporter on Citadel server)
+  - job_name: 'citadel-hx-server-02-postgres'
+    static_configs:
+      - targets: ['192.168.10.35:9187']
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    labels:
+      cluster: 'hx-server-02'
+      environment: 'production'
+      service: 'postgresql'
+      database: 'citadel_llm_db'
+
+  # Redis Cache Metrics
+  - job_name: 'citadel-hx-server-02-redis'
+    static_configs:
+      - targets: ['192.168.10.35:9121']
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    labels:
+      cluster: 'hx-server-02'
+      environment: 'production'
+      service: 'redis'
+
+  # GPU Metrics (if available)
+  - job_name: 'citadel-hx-server-02-gpu'
+    static_configs:
+      - targets: ['192.168.10.35:9400']
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    labels:
+      cluster: 'hx-server-02'
+      environment: 'production'
+      service: 'gpu'
+
+  # Health Check Endpoints
+  - job_name: 'citadel-hx-server-02-health'
+    static_configs:
+      - targets: ['192.168.10.35:8002']
+    metrics_path: '/health/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    labels:
+      cluster: 'hx-server-02'
+      environment: 'production'
+      service: 'health'
+
+  # Ollama AI Service Metrics (if exposed)
+  - job_name: 'citadel-hx-server-02-ollama'
+    static_configs:
+      - targets: ['192.168.10.35:11434']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    labels:
+      cluster: 'hx-server-02'
+      environment: 'production'
+      service: 'ollama'

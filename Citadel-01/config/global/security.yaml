@@ -1,0 +1,24 @@
+# Citadel AI Operating System - Global Security Configuration (R&D Baseline)
+network:
+  fastapi_gateway_port: 8000
+  ollama_service_port: 11434
+  allowed_origins:
+    - "http://localhost"
+    - "http://localhost:8000"
+    - "http://192.168.10.38" # OpenUI Interface
+    - "http://192.168.10.29" # LLM Server itself
+
+authentication:
+  enabled: false # Basic for R&D, will be enhanced
+  method: "none" # Placeholder
+
+authorization:
+  enabled: false # Basic for R&D, will be enhanced
+  roles: [] # Placeholder
+
+data_protection:
+  encryption_enabled: false # Not in scope for R&D
+  access_control_lists:
+    /opt/citadel/: "agent0:citadel,rwx"
+    /var/log/citadel/: "agent0:citadel,rwx"
+

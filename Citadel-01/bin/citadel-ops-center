@@ -1,0 +1,411 @@
+#!/bin/bash
+# Citadel Operations Center
+# Unified interface for all operational tools
+
+set -euo pipefail
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+print_banner() {
+    clear
+    echo -e "${CYAN}╔════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║                          CITADEL OPERATIONS CENTER                    ║${NC}"
+    echo -e "${CYAN}║                         Unified Management Console                    ║${NC}"
+    echo -e "${CYAN}╚════════════════════════════════════════════════════════════════════╝${NC}"
+    echo
+}
+
+show_main_menu() {
+    echo -e "${BLUE}🎛️  Main Operations Menu${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo
+    echo -e "${YELLOW}Service Management:${NC}"
+    echo "  1) Service Status & Control"
+    echo "  2) Health Monitoring"
+    echo "  3) Performance Monitoring"
+    echo "  4) Log Management"
+    echo
+    echo -e "${YELLOW}System Operations:${NC}"
+    echo "  5) Quick Health Check"
+    echo "  6) Full System Report"
+    echo "  7) Emergency Recovery"
+    echo "  8) Maintenance Mode"
+    echo
+    echo -e "${YELLOW}Monitoring Dashboards:${NC}"
+    echo "  9) Real-time Dashboard"
+    echo " 10) Performance Analytics"
+    echo " 11) Error Analysis"
+    echo " 12) Service Dependencies"
+    echo
+    echo -e "${YELLOW}Administrative:${NC}"
+    echo " 13) Configuration Review"
+    echo " 14) Security Status"
+    echo " 15) Backup & Archive"
+    echo
+    echo "  0) Exit"
+    echo
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+service_management() {
+    while true; do
+        print_banner
+        echo -e "${BLUE}🔧 Service Management${NC}"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo
+        echo "1) Show All Service Status"
+        echo "2) Start All Services"
+        echo "3) Stop All Services"
+        echo "4) Restart All Services"
+        echo "5) Individual Service Control"
+        echo "6) Enable/Disable Auto-start"
+        echo "0) Back to Main Menu"
+        echo
+        read -p "Select option: " choice
+        
+        case $choice in
+            1) /opt/citadel/bin/citadel-service-manager status; read -p "Press Enter to continue..." ;;
+            2) /opt/citadel/bin/citadel-service-manager start; read -p "Press Enter to continue..." ;;
+            3) /opt/citadel/bin/citadel-service-manager stop; read -p "Press Enter to continue..." ;;
+            4) /opt/citadel/bin/citadel-service-manager restart; read -p "Press Enter to continue..." ;;
+            5) individual_service_control ;;
+            6) auto_start_management ;;
+            0) break ;;
+            *) echo "Invalid option"; sleep 1 ;;
+        esac
+    done
+}
+
+individual_service_control() {
+    local services=("postgresql" "redis-server" "ollama" "nginx" "citadel-gateway")
+    
+    while true; do
+        print_banner
+        echo -e "${BLUE}🎯 Individual Service Control${NC}"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo
+        echo "Available Services:"
+        for i in "${!services[@]}"; do
+            echo "  $((i+1))) ${services[i]}"
+        done
+        echo "  0) Back"
+        echo
+        read -p "Select service: " svc_choice
+        
+        if [[ $svc_choice == "0" ]]; then
+            break
+        elif [[ $svc_choice -ge 1 && $svc_choice -le ${#services[@]} ]]; then
+            local service="${services[$((svc_choice-1))]}"
+            
+            echo
+            echo "Actions for $service:"
+            echo "1) Status   2) Start   3) Stop   4) Restart   5) Logs"
+            read -p "Select action: " action
+            
+            case $action in
+                1) /opt/citadel/bin/citadel-service-manager status "$service" ;;
+                2) /opt/citadel/bin/citadel-service-manager start "$service" ;;
+                3) /opt/citadel/bin/citadel-service-manager stop "$service" ;;
+                4) /opt/citadel/bin/citadel-service-manager restart "$service" ;;
+                5) /opt/citadel/bin/citadel-log-manager tail "$service" 50 ;;
+            esac
+            read -p "Press Enter to continue..."
+        fi
+    done
+}
+
+health_monitoring() {
+    while true; do
+        print_banner
+        echo -e "${BLUE}🏥 Health Monitoring${NC}"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo
+        echo "1) Quick Health Check"
+        echo "2) Comprehensive Health Check"
+        echo "3) Current Health Status"
+        echo "4) Start Continuous Monitoring"
+        echo "5) Check Health Service"
+        echo "0) Back to Main Menu"
+        echo
+        read -p "Select option: " choice
+        
+        case $choice in
+            1) /opt/citadel/bin/citadel-service-manager health; read -p "Press Enter to continue..." ;;
+            2) /opt/citadel/bin/citadel-health-monitor check; read -p "Press Enter to continue..." ;;
+            3) /opt/citadel/bin/citadel-health-monitor status; read -p "Press Enter to continue..." ;;
+            4) echo "Starting continuous monitoring (Ctrl+C to stop)..."; /opt/citadel/bin/citadel-health-monitor monitor ;;
+            5) curl -s http://localhost:8002/health/ | jq . || echo "Health service not responding"; read -p "Press Enter to continue..." ;;
+            0) break ;;
+            *) echo "Invalid option"; sleep 1 ;;
+        esac
+    done
+}
+
+performance_monitoring() {
+    while true; do
+        print_banner
+        echo -e "${BLUE}📊 Performance Monitoring${NC}"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo
+        echo "1) Real-time Performance Monitor"
+        echo "2) Interactive Dashboard"
+        echo "3) Performance Report"
+        echo "4) Current Alerts"
+        echo "5) System Stress Test"
+        echo "0) Back to Main Menu"
+        echo
+        read -p "Select option: " choice
+        
+        case $choice in
+            1) /opt/citadel/bin/citadel-performance-monitor monitor 300 ;;
+            2) /opt/citadel/bin/citadel-performance-monitor dashboard ;;
+            3) /opt/citadel/bin/citadel-performance-monitor report; read -p "Press Enter to continue..." ;;
+            4) /opt/citadel/bin/citadel-performance-monitor alerts; read -p "Press Enter to continue..." ;;
+            5) /opt/citadel/bin/citadel-performance-monitor stress-test; read -p "Press Enter to continue..." ;;
+            0) break ;;
+            *) echo "Invalid option"; sleep 1 ;;
+        esac
+    done
+}
+
+log_management() {
+    while true; do
+        print_banner
+        echo -e "${BLUE}📝 Log Management${NC}"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo
+        echo "1) Log Summary"
+        echo "2) View Specific Log"
+        echo "3) Follow Log (Tail)"
+        echo "4) Search All Logs"
+        echo "5) Recent Errors"
+        echo "6) Log Maintenance (Rotate/Clean)"
+        echo "0) Back to Main Menu"
+        echo
+        read -p "Select option: " choice
+        
+        case $choice in
+            1) /opt/citadel/bin/citadel-log-manager summary; read -p "Press Enter to continue..." ;;
+            2) 
+                echo "Available logs: gateway, health, postgresql, redis-server, ollama, nginx"
+                read -p "Enter log name: " log_name
+                /opt/citadel/bin/citadel-log-manager view "$log_name"
+                ;;
+            3)
+                echo "Available logs: gateway, health, postgresql, redis-server, ollama, nginx"
+                read -p "Enter log name: " log_name
+                read -p "Number of lines (default 50): " lines
+                /opt/citadel/bin/citadel-log-manager tail "$log_name" "${lines:-50}"
+                ;;
+            4)
+                read -p "Enter search pattern: " pattern
+                /opt/citadel/bin/citadel-log-manager search "$pattern"
+                read -p "Press Enter to continue..."
+                ;;
+            5) /opt/citadel/bin/citadel-log-manager errors; read -p "Press Enter to continue..." ;;
+            6) log_maintenance ;;
+            0) break ;;
+            *) echo "Invalid option"; sleep 1 ;;
+        esac
+    done
+}
+
+log_maintenance() {
+    print_banner
+    echo -e "${BLUE}🧹 Log Maintenance${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo
+    echo "1) Rotate Logs"
+    echo "2) Archive Old Logs"
+    echo "3) Clean Old Logs (30+ days)"
+    echo "4) All Maintenance Tasks"
+    echo "0) Back"
+    echo
+    read -p "Select option: " choice
+    
+    case $choice in
+        1) /opt/citadel/bin/citadel-log-manager rotate; read -p "Press Enter to continue..." ;;
+        2) /opt/citadel/bin/citadel-log-manager archive; read -p "Press Enter to continue..." ;;
+        3) /opt/citadel/bin/citadel-log-manager clean; read -p "Press Enter to continue..." ;;
+        4) 
+            echo "Running all maintenance tasks..."
+            /opt/citadel/bin/citadel-log-manager rotate
+            /opt/citadel/bin/citadel-log-manager archive
+            /opt/citadel/bin/citadel-log-manager clean
+            read -p "Press Enter to continue..."
+            ;;
+    esac
+}
+
+quick_health_check() {
+    print_banner
+    echo -e "${BLUE}⚡ Quick Health Check${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo
+    
+    # Quick service status
+    echo -e "${CYAN}🔧 Service Status:${NC}"
+    /opt/citadel/bin/citadel-service-manager status
+    echo
+    
+    # Quick health endpoints
+    echo -e "${CYAN}🌐 API Health:${NC}"
+    local endpoints=(
+        "http://localhost:8002/health/quick"
+        "http://localhost:11434/api/version"
+    )
+    
+    for endpoint in "${endpoints[@]}"; do
+        if curl -s --max-time 5 "$endpoint" >/dev/null 2>&1; then
+            echo -e "  ✅ $endpoint"
+        else
+            echo -e "  ❌ $endpoint"
+        fi
+    done
+    echo
+    
+    # Quick performance check
+    echo -e "${CYAN}📊 Performance:${NC}"
+    local cpu_usage=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | awk -F'%' '{print $1}')
+    local memory_usage=$(free | grep Mem | awk '{printf("%.1f"), ($3/$2) * 100.0}')
+    echo "  CPU: ${cpu_usage}%"
+    echo "  Memory: ${memory_usage}%"
+    echo
+    
+    read -p "Press Enter to continue..."
+}
+
+full_system_report() {
+    print_banner
+    echo -e "${BLUE}📋 Full System Report${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo
+    
+    echo "Generating comprehensive system report..."
+    echo
+    
+    # Service status
+    echo -e "${CYAN}=== SERVICE STATUS ===${NC}"
+    /opt/citadel/bin/citadel-service-manager status
+    echo
+    
+    # Health check
+    echo -e "${CYAN}=== HEALTH CHECK ===${NC}"
+    /opt/citadel/bin/citadel-health-monitor check
+    echo
+    
+    # Performance report
+    echo -e "${CYAN}=== PERFORMANCE REPORT ===${NC}"
+    /opt/citadel/bin/citadel-performance-monitor report
+    echo
+    
+    # Log summary
+    echo -e "${CYAN}=== LOG SUMMARY ===${NC}"
+    /opt/citadel/bin/citadel-log-manager summary
+    echo
+    
+    # Recent errors
+    echo -e "${CYAN}=== RECENT ERRORS ===${NC}"
+    /opt/citadel/bin/citadel-log-manager errors
+    echo
+    
+    read -p "Press Enter to continue..."
+}
+
+emergency_recovery() {
+    print_banner
+    echo -e "${RED}🚨 Emergency Recovery${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo
+    echo -e "${YELLOW}⚠️  Warning: Emergency recovery will restart all services${NC}"
+    echo
+    read -p "Are you sure you want to proceed? (yes/no): " confirm
+    
+    if [[ "$confirm" == "yes" ]]; then
+        echo
+        echo "Initiating emergency recovery..."
+        
+        # Stop all services
+        echo "1. Stopping all services..."
+        /opt/citadel/bin/citadel-service-manager stop
+        sleep 5
+        
+        # Start essential services first
+        echo "2. Starting essential services..."
+        /opt/citadel/bin/citadel-service-manager start postgresql
+        sleep 3
+        /opt/citadel/bin/citadel-service-manager start redis-server
+        sleep 3
+        /opt/citadel/bin/citadel-service-manager start ollama
+        sleep 5
+        
+        # Start application services
+        echo "3. Starting application services..."
+        /opt/citadel/bin/citadel-service-manager start citadel-gateway
+        sleep 3
+        /opt/citadel/bin/citadel-service-manager start nginx
+        
+        # Verify recovery
+        echo "4. Verifying recovery..."
+        sleep 5
+        /opt/citadel/bin/citadel-service-manager health
+        
+        echo
+        echo -e "${GREEN}Emergency recovery completed${NC}"
+    else
+        echo "Emergency recovery cancelled"
+    fi
+    
+    read -p "Press Enter to continue..."
+}
+
+# Main menu loop
+main() {
+    while true; do
+        print_banner
+        show_main_menu
+        read -p "Select option (0-15): " choice
+        
+        case $choice in
+            1) service_management ;;
+            2) health_monitoring ;;
+            3) performance_monitoring ;;
+            4) log_management ;;
+            5) quick_health_check ;;
+            6) full_system_report ;;
+            7) emergency_recovery ;;
+            8) echo "Maintenance mode not implemented yet"; sleep 2 ;;
+            9) /opt/citadel/bin/citadel-performance-monitor dashboard ;;
+            10) /opt/citadel/bin/citadel-performance-monitor monitor 600 ;;
+            11) /opt/citadel/bin/citadel-log-manager errors; read -p "Press Enter to continue..." ;;
+            12) echo "Service dependencies visualization not implemented yet"; sleep 2 ;;
+            13) echo "Configuration review not implemented yet"; sleep 2 ;;
+            14) echo "Security status not implemented yet"; sleep 2 ;;
+            15) echo "Backup & archive not implemented yet"; sleep 2 ;;
+            0) 
+                echo -e "${GREEN}Goodbye!${NC}"
+                exit 0
+                ;;
+            *)
+                echo -e "${RED}Invalid option. Please try again.${NC}"
+                sleep 1
+                ;;
+        esac
+    done
+}
+
+# Check if running as root for some operations
+if [[ $EUID -ne 0 ]]; then
+    echo -e "${YELLOW}⚠️  Some operations may require sudo privileges${NC}"
+    echo
+fi
+
+# Start main menu
+main "$@"

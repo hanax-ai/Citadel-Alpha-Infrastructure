@@ -1,0 +1,148 @@
+# Alertmanager webhook configuration for HX-Server-02 integration
+# This configuration should be added to the Alertmanager config at 192.168.10.37:9093
+
+# Add this webhook receiver to your alertmanager.yml configuration:
+
+# receivers:
+#   - name: 'citadel-hx-server-02-webhook'
+#     webhook_configs:
+#       - url: 'http://192.168.10.31:8000/webhooks/alerts'
+#         send_resolved: true
+#         http_config:
+#           basic_auth:
+#             username: 'alertmanager'
+#             password: 'webhook-secret-key'  # Configure as needed
+#         title: 'Citadel HX-Server-02 Alert'
+#         text: |
+#           {{ range .Alerts }}
+#           Alert: {{ .Annotations.summary }}
+#           Description: {{ .Annotations.description }}
+#           Labels: {{ range .Labels.SortedPairs }}{{ .Name }}={{ .Value }} {{ end }}
+#           {{ end }}
+
+# Example routing rule to send HX-Server-02 alerts to this webhook:
+# route:
+#   group_by: ['alertname', 'cluster', 'service']
+#   group_wait: 30s
+#   group_interval: 5m
+#   repeat_interval: 12h
+#   receiver: 'web.hook'
+#   routes:
+#     - match:
+#         cluster: hx-server-02
+#       receiver: 'citadel-hx-server-02-webhook'
+#       group_wait: 10s
+#       repeat_interval: 5m
+
+# Webhook endpoint details:
+webhook:
+  url: "http://192.168.10.31:8000/webhooks/alerts"
+  method: "POST"
+  content_type: "application/json"
+  
+  # Expected payload format from Alertmanager
+  payload_format: |
+    {
+      "receiver": "{{ .Receiver }}",
+      "status": "{{ .Status }}",
+      "alerts": [
+        {{- range .Alerts }}
+        {
+          "status": "{{ .Status }}",
+          "labels": {
+            {{- range .Labels.SortedPairs }}
+            "{{ .Name }}": "{{ .Value }}",
+            {{- end }}
+            "cluster": "hx-server-02"
+          },
+          "annotations": {
+            {{- range .Annotations.SortedPairs }}
+            "{{ .Name }}": "{{ .Value }}",
+            {{- end }}
+          },
+          "startsAt": "{{ .StartsAt }}",
+          "endsAt": "{{ .EndsAt }}",
+          "generatorURL": "{{ .GeneratorURL }}",
+          "fingerprint": "{{ .Fingerprint }}"
+        }{{- if not (last .Alerts) }},{{- end }}
+        {{- end }}
+      ],
+      "groupLabels": {
+        {{- range .GroupLabels.SortedPairs }}
+        "{{ .Name }}": "{{ .Value }}",
+        {{- end }}
+      },
+      "commonLabels": {
+        {{- range .CommonLabels.SortedPairs }}
+        "{{ .Name }}": "{{ .Value }}",
+        {{- end }}
+      },
+      "commonAnnotations": {
+        {{- range .CommonAnnotations.SortedPairs }}
+        "{{ .Name }}": "{{ .Value }}",
+        {{- end }}
+      },
+      "externalURL": "{{ .ExternalURL }}",
+      "version": "4",
+      "groupKey": "{{ .GroupKey }}",
+      "truncatedAlerts": {{ .TruncatedAlerts }}
+    }
+
+# Citadel webhook endpoints:
+endpoints:
+  webhook: "/webhooks/alerts"          # Receive alerts from Alertmanager
+  active: "/webhooks/alerts/active"    # View currently active alerts
+  history: "/webhooks/alerts/history"  # View alert history
+  stats: "/webhooks/alerts/stats"      # View alert statistics
+  clear: "/webhooks/alerts/history"    # Clear alert history (DELETE method)
+
+# Automated response configuration
+automated_responses:
+  critical_alerts:
+    - alert_name: "ServiceDown"
+      action: "restart_service"
+      services: ["citadel-gateway", "redis", "ollama"]
+      
+    - alert_name: "DiskSpaceLow" 
+      action: "cleanup_logs"
+      script: "/opt/citadel/bin/citadel-log-manager clean"
+      
+    - alert_name: "DatabaseConnectionsFull"
+      action: "restart_database_pool"
+      
+    - alert_name: "GPUTemperatureHigh"
+      action: "throttle_gpu_workload"
+      
+  warning_alerts:
+    - alert_name: "HighCPUUsage"
+      action: "monitor_and_log"
+      
+    - alert_name: "HighMemoryUsage" 
+      action: "monitor_and_log"
+      
+    - alert_name: "HighResponseTime"
+      action: "performance_analysis"
+
+# Security considerations
+security:
+  authentication:
+    enabled: true
+    method: "basic_auth"  # or "bearer_token"
+    username: "alertmanager"
+    password_env: "ALERTMANAGER_WEBHOOK_PASSWORD"
+    
+  rate_limiting:
+    enabled: true
+    max_requests: 100
+    time_window: "1m"
+    
+  ip_whitelist:
+    - "192.168.10.37"  # Alertmanager server
+    - "192.168.10.0/24"  # Local network
+    
+# Logging configuration
+logging:
+  webhook_requests: true
+  alert_actions: true
+  performance_metrics: true
+  retention_days: 30

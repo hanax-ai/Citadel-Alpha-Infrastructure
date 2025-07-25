@@ -1,0 +1,579 @@
+#!/bin/bash
+# Citadel Performance Monitor Script
+# Real-time performance monitoring and metrics collection
+
+set -euo pipefail
+
+# Configuration
+CITADEL_HOME="/opt/citadel"
+METRICS_LOG="/opt/citadel/logs/monitoring/performance-metrics.log"
+INTERVAL=5  # seconds between samples
+DURATION=300  # total monitoring duration in seconds (5 minutes default)
+ALERT_THRESHOLD_CPU=80
+ALERT_THRESHOLD_MEMORY=85
+ALERT_THRESHOLD_DISK=90
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# Initialize
+mkdir -p "$(dirname "$METRICS_LOG")"
+
+log_metric() {
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] $1" >> "$METRICS_LOG"
+}
+
+print_header() {
+    echo -e "${CYAN}╔══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║                Citadel Performance Monitor               ║${NC}"
+    echo -e "${CYAN}║                Real-time System Metrics                 ║${NC}"
+    echo -e "${CYAN}╚══════════════════════════════════════════════════════════╝${NC}"
+    echo
+}
+
+show_usage() {
+    echo -e "${BLUE}Usage: $0 {monitor|report|alerts|dashboard|stress-test} [options]${NC}"
+    echo
+    echo -e "${YELLOW}Commands:${NC}"
+    echo "  monitor [duration]    - Start real-time monitoring (default: 5 minutes)"
+    echo "  report               - Generate performance report"
+    echo "  alerts               - Show current performance alerts"
+    echo "  dashboard            - Interactive performance dashboard"
+    echo "  stress-test          - Run system stress test"
+    echo
+    echo -e "${YELLOW}Options:${NC}"
+    echo "  --interval <seconds> - Monitoring interval (default: 5)"
+    echo "  --cpu-threshold <n>  - CPU alert threshold (default: 80%)"
+    echo "  --mem-threshold <n>  - Memory alert threshold (default: 85%)"
+    echo "  --disk-threshold <n> - Disk alert threshold (default: 90%)"
+    echo
+    echo -e "${YELLOW}Examples:${NC}"
+    echo "  $0 monitor 600              # Monitor for 10 minutes"
+    echo "  $0 dashboard                # Start interactive dashboard"
+    echo "  $0 report                   # Generate performance report"
+}
+
+get_cpu_usage() {
+    # Get CPU usage percentage
+    if command -v vmstat >/dev/null 2>&1; then
+        vmstat 1 2 | tail -1 | awk '{print 100-$15}'
+    else
+        top -bn1 | grep "Cpu(s)" | awk '{print $2}' | awk -F'%' '{print $1}'
+    fi
+}
+
+get_memory_usage() {
+    # Get memory usage percentage
+    free | grep Mem | awk '{printf("%.1f"), ($3/$2) * 100.0}'
+}
+
+get_disk_usage() {
+    # Get disk usage for /opt/citadel
+    df /opt/citadel | tail -1 | awk '{print $5}' | sed 's/%//'
+}
+
+get_load_average() {
+    uptime | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//'
+}
+
+get_network_stats() {
+    # Get network interface statistics
+    if command -v ss >/dev/null 2>&1; then
+        local established=$(ss -t state established | wc -l)
+        local listening=$(ss -tl | wc -l)
+        echo "established:$established,listening:$listening"
+    else
+        echo "established:0,listening:0"
+    fi
+}
+
+get_process_stats() {
+    # Get Citadel-specific process statistics
+    local gateway_pid=$(pgrep -f "uvicorn.*gateway" || echo "0")
+    local gateway_cpu=0
+    local gateway_mem=0
+    
+    if [[ "$gateway_pid" != "0" ]]; then
+        if command -v ps >/dev/null 2>&1; then
+            local stats=$(ps -p "$gateway_pid" -o %cpu,%mem --no-headers 2>/dev/null || echo "0.0 0.0")
+            gateway_cpu=$(echo "$stats" | awk '{print $1}')
+            gateway_mem=$(echo "$stats" | awk '{print $2}')
+        fi
+    fi
+    
+    echo "gateway_pid:$gateway_pid,gateway_cpu:$gateway_cpu,gateway_mem:$gateway_mem"
+}
+
+get_service_response_times() {
+    # Measure response times for key endpoints
+    local health_time=0
+    local ollama_time=0
+    local postgres_time=0
+    
+    # Health endpoint
+    if command -v curl >/dev/null 2>&1; then
+        health_time=$(curl -w "%{time_total}" -s -o /dev/null --max-time 10 "http://localhost:8002/health/quick" 2>/dev/null || echo "0")
+        ollama_time=$(curl -w "%{time_total}" -s -o /dev/null --max-time 10 "http://localhost:11434/api/version" 2>/dev/null || echo "0")
+    fi
+    
+    # PostgreSQL response time
+    if command -v psql >/dev/null 2>&1; then
+        local start_time=$(date +%s.%N)
+        if PGPASSWORD="CitadelLLM#2025\$SecurePass!" psql -h 192.168.10.35 -U citadel_llm_user -d citadel_llm_db -c "SELECT 1;" >/dev/null 2>&1; then
+            local end_time=$(date +%s.%N)
+            postgres_time=$(echo "$end_time - $start_time" | bc -l 2>/dev/null || echo "0")
+        fi
+    fi
+    
+    echo "health:$health_time,ollama:$ollama_time,postgres:$postgres_time"
+}
+
+check_alerts() {
+    local cpu_usage=$(get_cpu_usage)
+    local memory_usage=$(get_memory_usage)
+    local disk_usage=$(get_disk_usage)
+    local alerts=()
+    
+    # CPU alert
+    if (( $(echo "$cpu_usage > $ALERT_THRESHOLD_CPU" | bc -l) )); then
+        alerts+=("CPU usage high: ${cpu_usage}% (threshold: ${ALERT_THRESHOLD_CPU}%)")
+    fi
+    
+    # Memory alert
+    if (( $(echo "$memory_usage > $ALERT_THRESHOLD_MEMORY" | bc -l) )); then
+        alerts+=("Memory usage high: ${memory_usage}% (threshold: ${ALERT_THRESHOLD_MEMORY}%)")
+    fi
+    
+    # Disk alert
+    if [[ $disk_usage -gt $ALERT_THRESHOLD_DISK ]]; then
+        alerts+=("Disk usage high: ${disk_usage}% (threshold: ${ALERT_THRESHOLD_DISK}%)")
+    fi
+    
+    # Service alerts
+    local gateway_pid=$(pgrep -f "uvicorn.*gateway" || echo "0")
+    if [[ "$gateway_pid" == "0" ]]; then
+        alerts+=("Citadel Gateway process not running")
+    fi
+    
+    if ! systemctl is-active --quiet postgresql 2>/dev/null; then
+        alerts+=("PostgreSQL service not running")
+    fi
+    
+    if ! systemctl is-active --quiet ollama 2>/dev/null; then
+        alerts+=("Ollama service not running")
+    fi
+    
+    # Return alerts
+    printf '%s\n' "${alerts[@]}"
+}
+
+collect_metrics() {
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local cpu_usage=$(get_cpu_usage)
+    local memory_usage=$(get_memory_usage)
+    local disk_usage=$(get_disk_usage)
+    local load_avg=$(get_load_average)
+    local network_stats=$(get_network_stats)
+    local process_stats=$(get_process_stats)
+    local response_times=$(get_service_response_times)
+    
+    # Log metrics
+    log_metric "METRICS: timestamp=$timestamp,cpu=$cpu_usage,memory=$memory_usage,disk=$disk_usage,load=\"$load_avg\",network=\"$network_stats\",processes=\"$process_stats\",response_times=\"$response_times\""
+    
+    # Return structured data
+    echo "$timestamp|$cpu_usage|$memory_usage|$disk_usage|$load_avg|$network_stats|$process_stats|$response_times"
+}
+
+display_metrics() {
+    local data="$1"
+    IFS='|' read -r timestamp cpu memory disk load network processes response_times <<< "$data"
+    
+    # Create a real-time display
+    clear
+    print_header
+    
+    echo -e "${CYAN}Real-time Performance Metrics${NC}"
+    echo -e "${BLUE}Timestamp: $timestamp${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    # System Resources
+    echo -e "${YELLOW}System Resources:${NC}"
+    
+    # CPU with color coding
+    local cpu_color=$GREEN
+    if (( $(echo "$cpu > 60" | bc -l) )); then cpu_color=$YELLOW; fi
+    if (( $(echo "$cpu > $ALERT_THRESHOLD_CPU" | bc -l) )); then cpu_color=$RED; fi
+    echo -e "  CPU Usage: ${cpu_color}${cpu}%${NC}"
+    
+    # Memory with color coding
+    local mem_color=$GREEN
+    if (( $(echo "$memory > 70" | bc -l) )); then mem_color=$YELLOW; fi
+    if (( $(echo "$memory > $ALERT_THRESHOLD_MEMORY" | bc -l) )); then mem_color=$RED; fi
+    echo -e "  Memory Usage: ${mem_color}${memory}%${NC}"
+    
+    # Disk with color coding
+    local disk_color=$GREEN
+    if [[ $disk -gt 70 ]]; then disk_color=$YELLOW; fi
+    if [[ $disk -gt $ALERT_THRESHOLD_DISK ]]; then disk_color=$RED; fi
+    echo -e "  Disk Usage: ${disk_color}${disk}%${NC}"
+    
+    echo -e "  Load Average: $load"
+    echo
+    
+    # Network Stats
+    echo -e "${YELLOW}Network Connections:${NC}"
+    IFS=',' read -r -a net_array <<< "$network"
+    for item in "${net_array[@]}"; do
+        IFS=':' read -r key value <<< "$item"
+        echo "  $key: $value"
+    done
+    echo
+    
+    # Process Stats
+    echo -e "${YELLOW}Citadel Gateway Process:${NC}"
+    IFS=',' read -r -a proc_array <<< "$processes"
+    for item in "${proc_array[@]}"; do
+        IFS=':' read -r key value <<< "$item"
+        case "$key" in
+            "gateway_pid")
+                if [[ "$value" == "0" ]]; then
+                    echo -e "  PID: ${RED}Not Running${NC}"
+                else
+                    echo -e "  PID: ${GREEN}$value${NC}"
+                fi
+                ;;
+            "gateway_cpu")
+                echo "  CPU: ${value}%"
+                ;;
+            "gateway_mem")
+                echo "  Memory: ${value}%"
+                ;;
+        esac
+    done
+    echo
+    
+    # Response Times
+    echo -e "${YELLOW}Service Response Times:${NC}"
+    IFS=',' read -r -a resp_array <<< "$response_times"
+    for item in "${resp_array[@]}"; do
+        IFS=':' read -r key value <<< "$item"
+        local resp_color=$GREEN
+        if (( $(echo "$value > 1" | bc -l) )); then resp_color=$YELLOW; fi
+        if (( $(echo "$value > 5" | bc -l) )); then resp_color=$RED; fi
+        echo -e "  $key: ${resp_color}${value}s${NC}"
+    done
+    echo
+    
+    # Alerts
+    local alerts=($(check_alerts))
+    if [[ ${#alerts[@]} -gt 0 ]]; then
+        echo -e "${RED}🚨 ALERTS:${NC}"
+        for alert in "${alerts[@]}"; do
+            echo -e "  ${RED}⚠️  $alert${NC}"
+        done
+        echo
+    else
+        echo -e "${GREEN}✅ No alerts - all systems normal${NC}"
+        echo
+    fi
+    
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo -e "${BLUE}Press Ctrl+C to stop monitoring${NC}"
+}
+
+start_monitoring() {
+    local duration="${1:-$DURATION}"
+    local end_time=$(($(date +%s) + duration))
+    
+    echo -e "${BLUE}Starting performance monitoring for $duration seconds...${NC}"
+    echo -e "${BLUE}Interval: ${INTERVAL}s | Logging to: $METRICS_LOG${NC}"
+    echo
+    
+    # Trap for graceful shutdown
+    trap 'echo -e "\n${YELLOW}Monitoring stopped${NC}"; exit 0' INT TERM
+    
+    while [[ $(date +%s) -lt $end_time ]]; do
+        local metrics=$(collect_metrics)
+        display_metrics "$metrics"
+        sleep "$INTERVAL"
+    done
+    
+    echo -e "\n${GREEN}Monitoring completed${NC}"
+}
+
+generate_report() {
+    echo -e "${BLUE}Generating Performance Report...${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    if [[ ! -f "$METRICS_LOG" ]]; then
+        echo -e "${YELLOW}No metrics data found. Run monitoring first.${NC}"
+        return 1
+    fi
+    
+    local total_samples=$(grep "METRICS:" "$METRICS_LOG" | wc -l)
+    local report_date=$(date '+%Y-%m-%d %H:%M:%S')
+    
+    echo -e "${CYAN}Performance Report Generated: $report_date${NC}"
+    echo "Total samples: $total_samples"
+    echo
+    
+    # Extract and analyze metrics
+    echo -e "${YELLOW}CPU Usage Statistics:${NC}"
+    local cpu_stats=$(grep "METRICS:" "$METRICS_LOG" | grep -o "cpu=[0-9.]*" | cut -d'=' -f2)
+    if [[ -n "$cpu_stats" ]]; then
+        local cpu_avg=$(echo "$cpu_stats" | awk '{sum+=$1; count++} END {printf "%.1f", sum/count}')
+        local cpu_max=$(echo "$cpu_stats" | sort -n | tail -1)
+        local cpu_min=$(echo "$cpu_stats" | sort -n | head -1)
+        echo "  Average: ${cpu_avg}%"
+        echo "  Maximum: ${cpu_max}%"
+        echo "  Minimum: ${cpu_min}%"
+    fi
+    echo
+    
+    echo -e "${YELLOW}Memory Usage Statistics:${NC}"
+    local mem_stats=$(grep "METRICS:" "$METRICS_LOG" | grep -o "memory=[0-9.]*" | cut -d'=' -f2)
+    if [[ -n "$mem_stats" ]]; then
+        local mem_avg=$(echo "$mem_stats" | awk '{sum+=$1; count++} END {printf "%.1f", sum/count}')
+        local mem_max=$(echo "$mem_stats" | sort -n | tail -1)
+        local mem_min=$(echo "$mem_stats" | sort -n | head -1)
+        echo "  Average: ${mem_avg}%"
+        echo "  Maximum: ${mem_max}%"
+        echo "  Minimum: ${mem_min}%"
+    fi
+    echo
+    
+    echo -e "${YELLOW}Recent Alerts:${NC}"
+    local alert_count=$(grep -c "CPU usage high\|Memory usage high\|Disk usage high" "$METRICS_LOG" 2>/dev/null || echo "0")
+    echo "  Total alerts in log: $alert_count"
+    
+    if [[ $alert_count -gt 0 ]]; then
+        echo "  Recent alerts:"
+        grep "CPU usage high\|Memory usage high\|Disk usage high" "$METRICS_LOG" | tail -5 | while read -r line; do
+            echo "    $line"
+        done
+    fi
+    echo
+    
+    echo -e "${YELLOW}Service Health Summary:${NC}"
+    local current_alerts=($(check_alerts))
+    if [[ ${#current_alerts[@]} -gt 0 ]]; then
+        echo "  Current issues:"
+        for alert in "${current_alerts[@]}"; do
+            echo "    ⚠️  $alert"
+        done
+    else
+        echo "  ✅ All services healthy"
+    fi
+    
+    echo
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+show_alerts() {
+    echo -e "${BLUE}Current Performance Alerts${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    local alerts=($(check_alerts))
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    
+    echo "Alert check time: $timestamp"
+    echo
+    
+    if [[ ${#alerts[@]} -gt 0 ]]; then
+        echo -e "${RED}🚨 Active Alerts:${NC}"
+        for alert in "${alerts[@]}"; do
+            echo -e "  ${RED}⚠️  $alert${NC}"
+        done
+        echo
+        echo -e "${YELLOW}Recommendations:${NC}"
+        for alert in "${alerts[@]}"; do
+            case "$alert" in
+                *"CPU usage high"*)
+                    echo "  - Check for resource-intensive processes"
+                    echo "  - Consider scaling if sustained high CPU"
+                    ;;
+                *"Memory usage high"*)
+                    echo "  - Check for memory leaks in applications"
+                    echo "  - Consider increasing available memory"
+                    ;;
+                *"Disk usage high"*)
+                    echo "  - Clean up old logs and temporary files"
+                    echo "  - Archive or delete unnecessary data"
+                    ;;
+                *"not running"*)
+                    echo "  - Restart the affected service"
+                    echo "  - Check service logs for errors"
+                    ;;
+            esac
+        done
+    else
+        echo -e "${GREEN}✅ No active alerts - all systems operating normally${NC}"
+    fi
+    
+    echo
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+interactive_dashboard() {
+    echo -e "${BLUE}Starting Interactive Performance Dashboard...${NC}"
+    echo -e "${YELLOW}Commands: q=quit, r=report, a=alerts, s=stress-test${NC}"
+    echo
+    
+    # Trap for graceful shutdown
+    trap 'echo -e "\n${YELLOW}Dashboard closed${NC}"; exit 0' INT TERM
+    
+    while true; do
+        local metrics=$(collect_metrics)
+        display_metrics "$metrics"
+        
+        # Non-blocking input check
+        if read -t "$INTERVAL" -n 1 key; then
+            case "$key" in
+                'q'|'Q')
+                    echo -e "\n${YELLOW}Dashboard closed${NC}"
+                    break
+                    ;;
+                'r'|'R')
+                    generate_report
+                    read -p "Press Enter to continue..." -r
+                    ;;
+                'a'|'A')
+                    show_alerts
+                    read -p "Press Enter to continue..." -r
+                    ;;
+                's'|'S')
+                    echo -e "\n${YELLOW}Starting stress test...${NC}"
+                    run_stress_test
+                    read -p "Press Enter to continue..." -r
+                    ;;
+            esac
+        fi
+    done
+}
+
+run_stress_test() {
+    echo -e "${BLUE}Running System Stress Test...${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    local test_duration=30
+    echo "Test duration: ${test_duration} seconds"
+    echo
+    
+    # CPU stress test
+    echo -e "${YELLOW}CPU Stress Test:${NC}"
+    local cpu_cores=$(nproc)
+    echo "Testing with $cpu_cores CPU cores..."
+    
+    # Start CPU stress in background
+    for ((i=1; i<=cpu_cores; i++)); do
+        yes > /dev/null &
+    done
+    local stress_pids=($!)
+    
+    # Monitor during stress test
+    local start_time=$(date +%s)
+    local end_time=$((start_time + test_duration))
+    
+    while [[ $(date +%s) -lt $end_time ]]; do
+        local cpu_usage=$(get_cpu_usage)
+        local memory_usage=$(get_memory_usage)
+        echo "  CPU: ${cpu_usage}% | Memory: ${memory_usage}%"
+        sleep 2
+    done
+    
+    # Clean up stress processes
+    for pid in "${stress_pids[@]}"; do
+        kill "$pid" 2>/dev/null || true
+    done
+    killall yes 2>/dev/null || true
+    
+    echo
+    echo -e "${GREEN}Stress test completed${NC}"
+    
+    # Wait for system to stabilize
+    echo "Waiting for system to stabilize..."
+    sleep 10
+    
+    # Show post-stress metrics
+    echo -e "${YELLOW}Post-stress metrics:${NC}"
+    local final_cpu=$(get_cpu_usage)
+    local final_memory=$(get_memory_usage)
+    echo "  CPU: ${final_cpu}%"
+    echo "  Memory: ${final_memory}%"
+    echo
+}
+
+# Parse command line arguments
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --interval)
+                INTERVAL="$2"
+                shift 2
+                ;;
+            --cpu-threshold)
+                ALERT_THRESHOLD_CPU="$2"
+                shift 2
+                ;;
+            --mem-threshold)
+                ALERT_THRESHOLD_MEMORY="$2"
+                shift 2
+                ;;
+            --disk-threshold)
+                ALERT_THRESHOLD_DISK="$2"
+                shift 2
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
+}
+
+# Main command processing
+main() {
+    local command="${1:-}"
+    shift || true
+    
+    # Parse additional arguments
+    parse_args "$@"
+    
+    print_header
+    
+    case "$command" in
+        "monitor")
+            start_monitoring "${1:-$DURATION}"
+            ;;
+        "report")
+            generate_report
+            ;;
+        "alerts")
+            show_alerts
+            ;;
+        "dashboard")
+            interactive_dashboard
+            ;;
+        "stress-test")
+            run_stress_test
+            ;;
+        *)
+            show_usage
+            exit 1
+            ;;
+    esac
+}
+
+# Check dependencies
+if ! command -v bc >/dev/null 2>&1; then
+    echo -e "${YELLOW}Warning: 'bc' not found. Some calculations may not work properly.${NC}"
+fi
+
+# Run main function
+main "$@"

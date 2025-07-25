@@ -1,0 +1,289 @@
+#!/bin/bash
+
+# Enhanced Citadel Service Recovery Manager
+# Handles automatic service recovery and restart procedures
+
+set -euo pipefail
+
+CITADEL_HOME="/opt/citadel"
+SERVICE_NAME="citadel-gateway.service"
+LOG_DIR="$CITADEL_HOME/logs/api-gateway"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+log() {
+    echo -e "${BLUE}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} $1"
+}
+
+success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Function to deploy enhanced service configuration
+deploy_enhanced_service() {
+    log "Deploying enhanced service configuration with advanced recovery..."
+    
+    # Backup current service
+    if [[ -f "/etc/systemd/system/$SERVICE_NAME" ]]; then
+        sudo cp "/etc/systemd/system/$SERVICE_NAME" "/etc/systemd/system/${SERVICE_NAME}.backup.$(date +%Y%m%d_%H%M%S)"
+        success "Backed up current service configuration"
+    fi
+    
+    # Deploy enhanced service
+    sudo cp "$CITADEL_HOME/config/services/citadel-gateway-enhanced.service" "/etc/systemd/system/$SERVICE_NAME"
+    
+    # Deploy recovery service
+    sudo cp "$CITADEL_HOME/config/services/citadel-recovery.service" "/etc/systemd/system/"
+    
+    # Reload systemd
+    sudo systemctl daemon-reload
+    
+    # Enable services
+    sudo systemctl enable "$SERVICE_NAME"
+    sudo systemctl enable citadel-recovery.service
+    
+    success "Enhanced service configuration deployed"
+}
+
+# Function to test automatic restart functionality
+test_automatic_restart() {
+    log "Testing automatic restart functionality..."
+    
+    # Start the service
+    sudo systemctl start "$SERVICE_NAME"
+    
+    # Wait for it to be active
+    local timeout=30
+    local count=0
+    while [[ $count -lt $timeout ]]; do
+        if systemctl is-active --quiet "$SERVICE_NAME"; then
+            break
+        fi
+        sleep 1
+        ((count++))
+    done
+    
+    if ! systemctl is-active --quiet "$SERVICE_NAME"; then
+        error "Service failed to start within $timeout seconds"
+        return 1
+    fi
+    
+    success "Service started successfully"
+    
+    # Get the main PID
+    local main_pid=$(systemctl show "$SERVICE_NAME" --property=MainPID --value)
+    
+    if [[ "$main_pid" == "0" ]] || [[ -z "$main_pid" ]]; then
+        error "Could not determine service PID"
+        return 1
+    fi
+    
+    log "Service is running with PID: $main_pid"
+    
+    # Kill the process to trigger restart
+    log "Simulating service failure by killing process..."
+    sudo kill -TERM "$main_pid"
+    
+    # Wait a moment
+    sleep 2
+    
+    # Check if it's restarting
+    log "Waiting for automatic restart (should occur within 5 seconds)..."
+    sleep 6
+    
+    # Verify it restarted
+    if systemctl is-active --quiet "$SERVICE_NAME"; then
+        local new_pid=$(systemctl show "$SERVICE_NAME" --property=MainPID --value)
+        if [[ "$new_pid" != "$main_pid" ]] && [[ "$new_pid" != "0" ]]; then
+            success "Service automatically restarted with new PID: $new_pid"
+            return 0
+        else
+            warning "Service status is active but PID didn't change"
+            return 1
+        fi
+    else
+        error "Service failed to automatically restart"
+        return 1
+    fi
+}
+
+# Function to show service restart configuration
+show_restart_config() {
+    log "Current restart configuration:"
+    
+    echo ""
+    echo "Service: $SERVICE_NAME"
+    
+    if systemctl list-unit-files | grep -q "$SERVICE_NAME"; then
+        echo "Status: $(systemctl is-enabled "$SERVICE_NAME")"
+        echo "Active: $(systemctl is-active "$SERVICE_NAME")"
+        
+        echo ""
+        echo "Restart Configuration:"
+        
+        # Extract restart settings
+        local service_file="/etc/systemd/system/$SERVICE_NAME"
+        if [[ -f "$service_file" ]]; then
+            echo "  Restart: $(grep "^Restart=" "$service_file" | cut -d'=' -f2 || echo "not set")"
+            echo "  RestartSec: $(grep "^RestartSec=" "$service_file" | cut -d'=' -f2 || echo "not set")"
+            echo "  StartLimitInterval: $(grep "^StartLimitInterval=" "$service_file" | cut -d'=' -f2 || echo "not set")"
+            echo "  StartLimitBurst: $(grep "^StartLimitBurst=" "$service_file" | cut -d'=' -f2 || echo "not set")"
+            echo "  StartLimitAction: $(grep "^StartLimitAction=" "$service_file" | cut -d'=' -f2 || echo "not set")"
+            echo "  WatchdogSec: $(grep "^WatchdogSec=" "$service_file" | cut -d'=' -f2 || echo "not set")"
+        fi
+        
+        echo ""
+        echo "Service Statistics:"
+        systemctl show "$SERVICE_NAME" --property=NRestarts,RestartUSec,StartLimitBurst,StartLimitIntervalUSec
+        
+    else
+        error "Service file not found"
+    fi
+}
+
+# Function to monitor service health
+monitor_service_health() {
+    local duration=${1:-60}  # Default 60 seconds
+    
+    log "Monitoring service health for $duration seconds..."
+    
+    local start_time=$(date +%s)
+    local end_time=$((start_time + duration))
+    local check_count=0
+    local failure_count=0
+    
+    while [[ $(date +%s) -lt $end_time ]]; do
+        ((check_count++))
+        
+        if systemctl is-active --quiet "$SERVICE_NAME"; then
+            echo -n "."
+        else
+            echo -n "X"
+            ((failure_count++))
+        fi
+        
+        sleep 5
+    done
+    
+    echo ""
+    log "Health monitoring completed"
+    log "Total checks: $check_count"
+    log "Failures: $failure_count"
+    
+    if [[ $failure_count -eq 0 ]]; then
+        success "Service remained healthy throughout monitoring period"
+    else
+        warning "Service experienced $failure_count failures during monitoring"
+    fi
+}
+
+# Function to show service logs
+show_service_logs() {
+    local lines=${1:-50}
+    
+    log "Recent service logs (last $lines lines):"
+    echo ""
+    
+    if [[ -f "$LOG_DIR/service.log" ]]; then
+        tail -n "$lines" "$LOG_DIR/service.log"
+    else
+        warning "Service log file not found at $LOG_DIR/service.log"
+        
+        # Fall back to journalctl
+        log "Showing systemd journal logs instead:"
+        journalctl -u "$SERVICE_NAME" -n "$lines" --no-pager
+    fi
+}
+
+# Function to reset service state
+reset_service_state() {
+    log "Resetting service state..."
+    
+    # Stop the service
+    sudo systemctl stop "$SERVICE_NAME" 2>/dev/null || true
+    
+    # Reset failed state
+    sudo systemctl reset-failed "$SERVICE_NAME" 2>/dev/null || true
+    
+    # Clear recovery state
+    if [[ -f "$CITADEL_HOME/var/state/recovery-state" ]]; then
+        echo "0" > "$CITADEL_HOME/var/state/recovery-state"
+    fi
+    
+    # Clean up PID files
+    rm -f "$CITADEL_HOME/var/run/citadel-gateway.pid"
+    
+    success "Service state reset"
+}
+
+# Main function
+main() {
+    local action="${1:-status}"
+    
+    echo "=================================================================="
+    echo "         Enhanced Citadel Service Recovery Manager"
+    echo "=================================================================="
+    echo ""
+    
+    case "$action" in
+        "deploy")
+            deploy_enhanced_service
+            ;;
+        "test-restart")
+            test_automatic_restart
+            ;;
+        "config")
+            show_restart_config
+            ;;
+        "monitor")
+            local duration="${2:-60}"
+            monitor_service_health "$duration"
+            ;;
+        "logs")
+            local lines="${2:-50}"
+            show_service_logs "$lines"
+            ;;
+        "reset")
+            reset_service_state
+            ;;
+        "status")
+            show_restart_config
+            ;;
+        "full-test")
+            show_restart_config
+            echo ""
+            test_automatic_restart
+            echo ""
+            monitor_service_health 30
+            ;;
+        *)
+            echo "Usage: $0 {deploy|test-restart|config|monitor|logs|reset|status|full-test}"
+            echo ""
+            echo "Actions:"
+            echo "  deploy       - Deploy enhanced service configuration"
+            echo "  test-restart - Test automatic restart functionality"
+            echo "  config       - Show current restart configuration"
+            echo "  monitor [sec] - Monitor service health (default 60 seconds)"
+            echo "  logs [lines] - Show recent service logs (default 50 lines)"
+            echo "  reset        - Reset service state and clear failures"
+            echo "  status       - Show current status and configuration"
+            echo "  full-test    - Run complete restart functionality test"
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

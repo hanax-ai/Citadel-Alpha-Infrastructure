@@ -1,0 +1,160 @@
+#!/bin/bash
+
+# Automatic Service Recovery Testing and Validation Script
+# Tests the citadel-gateway service's automatic restart capabilities
+
+set -e
+
+SERVICE_NAME="citadel-gateway"
+LOG_FILE="/tmp/service-recovery-test-$(date +%Y%m%d-%H%M%S).log"
+TEST_DURATION=60  # seconds to monitor after killing service
+
+echo "=== Citadel Gateway Service Recovery Testing ===" | tee -a "$LOG_FILE"
+echo "Test started at: $(date)" | tee -a "$LOG_FILE"
+echo "Log file: $LOG_FILE" | tee -a "$LOG_FILE"
+echo
+
+# Function to get service status
+get_service_status() {
+    systemctl is-active "$SERVICE_NAME" 2>/dev/null || echo "inactive"
+}
+
+# Function to get service PID
+get_service_pid() {
+    systemctl show "$SERVICE_NAME" --property=MainPID --value 2>/dev/null | grep -v '^0$' || echo ""
+}
+
+# Function to check if service is listening on port
+check_port() {
+    netstat -tln | grep -q ":8002 " && echo "listening" || echo "not_listening"
+}
+
+# Function to test HTTP endpoint
+test_endpoint() {
+    curl -s -o /dev/null -w "%{http_code}" "http://localhost:8002/health/" 2>/dev/null || echo "000"
+}
+
+echo "📋 Pre-test Service Status Check" | tee -a "$LOG_FILE"
+echo "Service Status: $(get_service_status)" | tee -a "$LOG_FILE"
+echo "Service PID: $(get_service_pid)" | tee -a "$LOG_FILE"
+echo "Port Status: $(check_port)" | tee -a "$LOG_FILE"
+echo "Health Check: HTTP $(test_endpoint)" | tee -a "$LOG_FILE"
+echo
+
+# Ensure service is running before test
+if [[ "$(get_service_status)" != "active" ]]; then
+    echo "⚠️  Service not active. Starting service first..." | tee -a "$LOG_FILE"
+    sudo systemctl start "$SERVICE_NAME"
+    sleep 10
+    
+    if [[ "$(get_service_status)" != "active" ]]; then
+        echo "❌ ERROR: Cannot start service for testing" | tee -a "$LOG_FILE"
+        exit 1
+    fi
+fi
+
+# Get initial PID
+INITIAL_PID=$(get_service_pid)
+echo "🎯 Target PID for termination: $INITIAL_PID" | tee -a "$LOG_FILE"
+
+if [[ -z "$INITIAL_PID" ]]; then
+    echo "❌ ERROR: Cannot determine service PID" | tee -a "$LOG_FILE"
+    exit 1
+fi
+
+echo
+echo "🔪 Simulating Service Failure - Killing Process..." | tee -a "$LOG_FILE"
+echo "Killing PID $INITIAL_PID at: $(date)" | tee -a "$LOG_FILE"
+
+# Kill the service process
+sudo kill -9 "$INITIAL_PID"
+
+echo "Process killed. Monitoring recovery..." | tee -a "$LOG_FILE"
+echo
+
+# Monitor recovery
+START_TIME=$(date +%s)
+RECOVERY_DETECTED=false
+NEW_PID=""
+
+echo "📊 Recovery Monitoring (every 2 seconds for $TEST_DURATION seconds):" | tee -a "$LOG_FILE"
+echo "Time | Status | PID | Port | Health | Notes" | tee -a "$LOG_FILE"
+echo "-----|--------|-----|------|--------|-------" | tee -a "$LOG_FILE"
+
+while [[ $(($(date +%s) - START_TIME)) -lt $TEST_DURATION ]]; do
+    CURRENT_TIME=$(($(date +%s) - START_TIME))
+    STATUS=$(get_service_status)
+    PID=$(get_service_pid)
+    PORT=$(check_port)
+    HEALTH=$(test_endpoint)
+    
+    NOTES=""
+    if [[ "$PID" != "$INITIAL_PID" && -n "$PID" && "$RECOVERY_DETECTED" == "false" ]]; then
+        RECOVERY_DETECTED=true
+        NEW_PID="$PID"
+        NOTES="🔄 RECOVERY DETECTED!"
+    fi
+    
+    if [[ "$STATUS" == "active" && "$PORT" == "listening" && "$HEALTH" == "200" ]]; then
+        if [[ "$RECOVERY_DETECTED" == "true" && -z "$NOTES" ]]; then
+            NOTES="✅ FULLY OPERATIONAL"
+        fi
+    fi
+    
+    printf "%4ds | %-8s | %-5s | %-8s | %-6s | %s\n" \
+        "$CURRENT_TIME" "$STATUS" "$PID" "$PORT" "$HEALTH" "$NOTES" | tee -a "$LOG_FILE"
+    
+    sleep 2
+done
+
+echo | tee -a "$LOG_FILE"
+echo "📈 Test Results Summary:" | tee -a "$LOG_FILE"
+
+# Final status check
+FINAL_STATUS=$(get_service_status)
+FINAL_PID=$(get_service_pid)
+FINAL_PORT=$(check_port)
+FINAL_HEALTH=$(test_endpoint)
+
+echo "Initial PID: $INITIAL_PID" | tee -a "$LOG_FILE"
+echo "Final PID: $FINAL_PID" | tee -a "$LOG_FILE"
+echo "Final Status: $FINAL_STATUS" | tee -a "$LOG_FILE"
+echo "Final Port: $FINAL_PORT" | tee -a "$LOG_FILE"
+echo "Final Health: HTTP $FINAL_HEALTH" | tee -a "$LOG_FILE"
+
+# Determine test result
+if [[ "$RECOVERY_DETECTED" == "true" && "$FINAL_STATUS" == "active" && "$FINAL_PORT" == "listening" && "$FINAL_HEALTH" == "200" ]]; then
+    echo "🎉 SUCCESS: Service automatically recovered!" | tee -a "$LOG_FILE"
+    echo "Recovery time: Service restarted and became fully operational" | tee -a "$LOG_FILE"
+    EXIT_CODE=0
+else
+    echo "❌ FAILURE: Service did not recover properly" | tee -a "$LOG_FILE"
+    if [[ "$RECOVERY_DETECTED" == "false" ]]; then
+        echo "   - No restart detected" | tee -a "$LOG_FILE"
+    fi
+    if [[ "$FINAL_STATUS" != "active" ]]; then
+        echo "   - Service not active" | tee -a "$LOG_FILE"
+    fi
+    if [[ "$FINAL_PORT" != "listening" ]]; then
+        echo "   - Port not listening" | tee -a "$LOG_FILE"
+    fi
+    if [[ "$FINAL_HEALTH" != "200" ]]; then
+        echo "   - Health check failed" | tee -a "$LOG_FILE"
+    fi
+    EXIT_CODE=1
+fi
+
+echo | tee -a "$LOG_FILE"
+echo "📊 Service Configuration Review:" | tee -a "$LOG_FILE"
+echo "RestartSec setting:" | tee -a "$LOG_FILE"
+sudo systemctl cat "$SERVICE_NAME" | grep -E "Restart|StartLimit" | tee -a "$LOG_FILE"
+
+echo | tee -a "$LOG_FILE"
+echo "🔍 Recent Service Logs (last 20 lines):" | tee -a "$LOG_FILE"
+sudo journalctl -u "$SERVICE_NAME" -n 20 --no-pager | tee -a "$LOG_FILE"
+
+echo | tee -a "$LOG_FILE"
+echo "Test completed at: $(date)" | tee -a "$LOG_FILE"
+echo "Full log saved to: $LOG_FILE"
+
+exit $EXIT_CODE

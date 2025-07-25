@@ -1,0 +1,83 @@
+# Prometheus Configuration for Citadel LLM System
+# Updated for operational dashboard deployment
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'hx-server-02'
+    environment: 'production'
+
+rule_files:
+  - "/opt/citadel-monitoring/prometheus/rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - localhost:9093
+
+scrape_configs:
+  # Citadel Gateway Metrics (Updated to correct port)
+  - job_name: 'citadel-gateway'
+    static_configs:
+      - targets: ['192.168.10.34:8002']  # HX-Server-02 production port
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    labels:
+      service: 'citadel-gateway'
+      instance: 'hx-server-02'
+
+  # Ollama Service Metrics
+  - job_name: 'ollama'
+    static_configs:
+      - targets: ['192.168.10.34:11434']  # Ollama service
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    labels:
+      service: 'ollama'
+      instance: 'hx-server-02'
+
+  # System Metrics (Node Exporter)
+  - job_name: 'node-exporter-hx-server-02'
+    static_configs:
+      - targets: ['192.168.10.34:9100']
+    scrape_interval: 15s
+    labels:
+      service: 'system'
+      instance: 'hx-server-02'
+
+  # PostgreSQL Metrics
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['192.168.10.35:9187']  # PostgreSQL exporter
+    scrape_interval: 30s
+    labels:
+      service: 'postgresql'
+      instance: 'hx-sql-database-server'
+
+  # Redis Metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['192.168.10.34:9121']  # Redis exporter
+    scrape_interval: 15s
+    labels:
+      service: 'redis'
+      instance: 'hx-server-02'
+
+  # Metrics Server Self-Monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    labels:
+      service: 'prometheus'
+      instance: 'hx-metrics-server'
+
+  - job_name: 'node-exporter-metrics-server'
+    static_configs:
+      - targets: ['localhost:9100']
+    labels:
+      service: 'system'
+      instance: 'hx-metrics-server'

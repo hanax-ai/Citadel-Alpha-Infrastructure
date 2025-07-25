@@ -1,0 +1,80 @@
+# Citadel AI Operating System - Global Logging Configuration
+version: 1
+disable_existing_loggers: False
+
+formatters:
+  standard:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  json:
+    format: '{"time": "%(asctime)s", "name": "%(name)s", "level": "%(levelname)s", "message": "%(message)s"}'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: standard
+    level: INFO
+  file_api_gateway_access:
+    class: logging.handlers.RotatingFileHandler
+    formatter: standard
+    filename: /var/log/citadel/api-gateway/access.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 5
+    level: INFO
+  file_api_gateway_error:
+    class: logging.handlers.RotatingFileHandler
+    formatter: standard
+    filename: /var/log/citadel/api-gateway/error.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 5
+    level: ERROR
+  file_ollama_service:
+    class: logging.handlers.RotatingFileHandler
+    formatter: standard
+    filename: /var/log/citadel/ollama/service.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 5
+    level: INFO
+  file_integration_sql:
+    class: logging.handlers.RotatingFileHandler
+    formatter: standard
+    filename: /var/log/citadel/integration/sql-database.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 5
+    level: INFO
+  file_integration_vector:
+    class: logging.handlers.RotatingFileHandler
+    formatter: standard
+    filename: /var/log/citadel/integration/vector-database.log
+    maxBytes: 10485760 # 10 MB
+    backupCount: 5
+    level: INFO
+
+loggers:
+  citadel_llm:
+    handlers: [console]
+    level: INFO
+    propagate: no
+  uvicorn.access:
+    handlers: [file_api_gateway_access]
+    level: INFO
+    propagate: no
+  uvicorn.error:
+    handlers: [file_api_gateway_error]
+    level: INFO
+    propagate: no
+  ollama_service:
+    handlers: [file_ollama_service]
+    level: INFO
+    propagate: no
+  sql_integration:
+    handlers: [file_integration_sql]
+    level: INFO
+    propagate: no
+  vector_integration:
+    handlers: [file_integration_vector]
+    level: INFO
+    propagate: no
+
+root:
+  handlers: [console]
+  level: INFO

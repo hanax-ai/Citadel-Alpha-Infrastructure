@@ -1,0 +1,76 @@
+[Unit]
+Description=Citadel LLM API Gateway - Production Service with Enhanced Recovery
+Documentation=https://citadel.local/docs
+After=network-online.target ollama.service redis-server.service
+Wants=network-online.target
+Requires=ollama.service redis-server.service
+BindsTo=ollama.service
+
+# Enhanced dependency monitoring
+OnFailure=citadel-recovery.service
+
+[Service]
+Type=exec
+User=agent0
+Group=citadel
+WorkingDirectory=/opt/citadel
+
+# Environment Configuration
+Environment="CITADEL_HOME=/opt/citadel"
+Environment="CITADEL_ENV=production"
+Environment="PYTHONPATH=/opt/citadel/src"
+Environment="PATH=/opt/citadel/citadel_venv/bin:/usr/local/bin:/usr/bin:/bin"
+
+# Security Configuration
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/citadel/logs /opt/citadel/var
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+
+# Resource Limits
+LimitNOFILE=65536
+LimitNPROC=4096
+MemoryMax=8G
+CPUQuota=800%
+
+# Service Configuration - Create directories before starting
+ExecStartPre=/bin/bash -c 'mkdir -p /opt/citadel/logs/api-gateway /opt/citadel/var/run'
+ExecStartPre=/bin/bash -c 'chown -R agent0:citadel /opt/citadel/logs /opt/citadel/var'
+
+# Production service with proper port configuration
+ExecStart=/opt/citadel/citadel_venv/bin/uvicorn citadel_llm.api.gateway:app --host 0.0.0.0 --port 8002 --workers 8 --log-level info --access-log
+
+# Enhanced Health check and monitoring
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+TimeoutStartSec=120
+TimeoutStopSec=60
+
+# Advanced Restart Configuration
+Restart=always
+RestartSec=5
+
+# Enhanced Start Limits with Progressive Delays
+StartLimitInterval=1800  # 30 minutes
+StartLimitBurst=10       # Allow up to 10 restarts in 30 minutes
+
+# Watchdog Configuration
+WatchdogSec=60          # Expect keepalive every 60 seconds
+NotifyAccess=main       # Allow service to send status notifications
+
+# Logging Configuration
+StandardOutput=append:/opt/citadel/logs/api-gateway/service.log
+StandardError=append:/opt/citadel/logs/api-gateway/error.log
+SyslogIdentifier=citadel-gateway
+
+# PID File
+PIDFile=/opt/citadel/var/run/citadel-gateway.pid
+
+[Install]
+WantedBy=multi-user.target
+Also=redis-server.service ollama.service

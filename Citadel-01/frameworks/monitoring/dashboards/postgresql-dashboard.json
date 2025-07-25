@@ -1,0 +1,125 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "PostgreSQL Database Monitoring",
+    "tags": ["database", "postgresql", "citadel"],
+    "style": "dark",
+    "timezone": "UTC",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Database Status",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "DOWN", "color": "red"}}, "type": "value"},
+              {"options": {"1": {"text": "UP", "color": "green"}}, "type": "value"}
+            ]
+          }
+        },
+        "targets": [
+          {
+            "expr": "up{job=\"citadel-hx-server-02-postgres\"}",
+            "legendFormat": "PostgreSQL Status"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Active Connections",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "pg_stat_database_numbackends{datname=\"citadel_llm_db\",job=\"citadel-hx-server-02-postgres\"}",
+            "legendFormat": "Active Connections"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Connection Pool Usage (%)",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "red", "value": 90}
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "expr": "pg_stat_database_numbackends{datname=\"citadel_llm_db\",job=\"citadel-hx-server-02-postgres\"} / pg_settings_max_connections{job=\"citadel-hx-server-02-postgres\"} * 100",
+            "legendFormat": "Pool Usage %"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Query Rate",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(pg_stat_database_tup_returned{datname=\"citadel_llm_db\",job=\"citadel-hx-server-02-postgres\"}[5m])",
+            "legendFormat": "Queries/sec"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Database Connections Over Time",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "targets": [
+          {
+            "expr": "pg_stat_database_numbackends{datname=\"citadel_llm_db\",job=\"citadel-hx-server-02-postgres\"}",
+            "legendFormat": "Active Connections"
+          },
+          {
+            "expr": "pg_settings_max_connections{job=\"citadel-hx-server-02-postgres\"}",
+            "legendFormat": "Max Connections"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Database Activity",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "targets": [
+          {
+            "expr": "rate(pg_stat_database_tup_returned{datname=\"citadel_llm_db\",job=\"citadel-hx-server-02-postgres\"}[5m])",
+            "legendFormat": "Tuples Returned/sec"
+          },
+          {
+            "expr": "rate(pg_stat_database_tup_fetched{datname=\"citadel_llm_db\",job=\"citadel-hx-server-02-postgres\"}[5m])",
+            "legendFormat": "Tuples Fetched/sec"
+          },
+          {
+            "expr": "rate(pg_stat_database_tup_inserted{datname=\"citadel_llm_db\",job=\"citadel-hx-server-02-postgres\"}[5m])",
+            "legendFormat": "Tuples Inserted/sec"
+          },
+          {
+            "expr": "rate(pg_stat_database_tup_updated{datname=\"citadel_llm_db\",job=\"citadel-hx-server-02-postgres\"}[5m])",
+            "legendFormat": "Tuples Updated/sec"
+          }
+        ]
+      }
+    ]
+  }
+}

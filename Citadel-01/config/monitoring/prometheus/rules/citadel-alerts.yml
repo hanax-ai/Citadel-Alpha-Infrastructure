@@ -1,0 +1,177 @@
+groups:
+  - name: citadel-hx-server-02.rules
+    rules:
+      # System Health Rules (using external node exporter data)
+      - alert: CitadelHighCPUUsage
+        expr: 100 - (avg(irate(node_cpu_seconds_total{instance="192.168.10.37:9100",mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "High CPU usage detected on HX-Server-02"
+          description: "CPU usage is above 80% for more than 5 minutes on Citadel HX-Server-02"
+          runbook_url: "http://192.168.10.35:8002/docs#/health"
+
+      - alert: CitadelHighMemoryUsage
+        expr: citadel_memory_usage_percent{instance="citadel-hx-server-02"} > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "High memory usage detected on HX-Server-02"
+          description: "Memory usage is above 85% for more than 5 minutes on Citadel HX-Server-02"
+
+      - alert: CitadelDiskSpaceLow
+        expr: citadel_disk_usage_percent{instance="citadel-hx-server-02",mountpoint="/opt/citadel"} > 90
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "Disk space critically low on HX-Server-02"
+          description: "Disk usage is above 90% on /opt/citadel"
+
+      # Service Health Rules
+      - alert: CitadelServiceDown
+        expr: up{cluster="hx-server-02"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: "{{ $labels.job }}"
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "Citadel service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on HX-Server-02 has been down for more than 1 minute"
+
+      - alert: CitadelGatewayHighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="citadel-hx-server-02-gateway"}[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: gateway
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "High response time detected on Citadel Gateway"
+          description: "95th percentile response time is above 5 seconds"
+
+      # Database Rules
+      - alert: CitadelDatabaseConnectionsHigh
+        expr: pg_stat_database_numbackends{datname="citadel_llm_db",job="citadel-hx-server-02-postgres"} / pg_settings_max_connections{job="citadel-hx-server-02-postgres"} * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "High database connection usage on HX-Server-02"
+          description: "Database connections are above 80% of maximum"
+
+      - alert: CitadelDatabaseConnectionsFull
+        expr: pg_stat_database_numbackends{datname="citadel_llm_db",job="citadel-hx-server-02-postgres"} / pg_settings_max_connections{job="citadel-hx-server-02-postgres"} * 100 > 95
+        for: 1m
+        labels:
+          severity: critical
+          service: postgresql
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "Database connections near maximum on HX-Server-02"
+          description: "Database connections are above 95% of maximum"
+
+      # Redis Rules
+      - alert: CitadelRedisMemoryHigh
+        expr: redis_memory_used_bytes{job="citadel-hx-server-02-redis"} / redis_memory_max_bytes{job="citadel-hx-server-02-redis"} * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "Redis memory usage high on HX-Server-02"
+          description: "Redis memory usage is above 90%"
+
+      # AI Performance Rules
+      - alert: CitadelOllamaHighLatency
+        expr: histogram_quantile(0.95, rate(ollama_request_duration_seconds_bucket{job="citadel-hx-server-02-ollama"}[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: ollama
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "Ollama high latency on HX-Server-02"
+          description: "Ollama 95th percentile response time is above 30 seconds"
+
+      - alert: CitadelGPUMemoryHigh
+        expr: citadel_gpu_memory_used_bytes{job="citadel-hx-server-02-gpu"} / citadel_gpu_memory_total_bytes{job="citadel-hx-server-02-gpu"} * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          service: gpu
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "GPU memory usage high on HX-Server-02"
+          description: "GPU memory usage is above 90%"
+
+      - alert: CitadelGPUTemperatureHigh
+        expr: citadel_gpu_temperature_celsius{job="citadel-hx-server-02-gpu"} > 85
+        for: 5m
+        labels:
+          severity: critical
+          service: gpu
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "GPU temperature critical on HX-Server-02"
+          description: "GPU temperature is above 85°C"
+
+      # Application-specific Rules
+      - alert: CitadelHealthCheckFailed
+        expr: citadel_health_check_status{job="citadel-hx-server-02-health"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: health
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "Citadel health check failed on HX-Server-02"
+          description: "Health check for {{ $labels.service }} has failed for more than 2 minutes"
+
+      - alert: CitadelHighErrorRate
+        expr: rate(http_requests_total{job="citadel-hx-server-02-gateway",status=~"5.."}[5m]) / rate(http_requests_total{job="citadel-hx-server-02-gateway"}[5m]) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: gateway
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "High error rate detected on Citadel Gateway"
+          description: "HTTP 5xx error rate is above 5% on HX-Server-02"
+
+      - alert: CitadelLongQueue
+        expr: citadel_ollama_queue_length{job="citadel-hx-server-02-app-metrics"} > 20
+        for: 2m
+        labels:
+          severity: warning
+          service: ollama
+          cluster: hx-server-02
+          instance: "192.168.10.35"
+        annotations:
+          summary: "Long request queue on HX-Server-02"
+          description: "Ollama queue length is above 20 requests"

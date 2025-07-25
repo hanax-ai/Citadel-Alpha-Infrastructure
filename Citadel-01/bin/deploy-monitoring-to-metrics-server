@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Deploy monitoring configurations to metrics server 192.168.10.37
+# Following the operational-dashboards-implementation.md guide
+
+METRICS_SERVER="192.168.10.37"
+METRICS_USER="root"
+CONFIG_PATH="/opt/citadel/config/monitoring"
+
+echo "Deploying monitoring configurations to metrics server..."
+
+# Create directory structure on metrics server
+ssh "${METRICS_USER}@${METRICS_SERVER}" "mkdir -p /opt/citadel-monitoring/{prometheus,grafana,alertmanager}"
+ssh "${METRICS_USER}@${METRICS_SERVER}" "mkdir -p /opt/citadel-monitoring/prometheus/{data,config,rules}"
+ssh "${METRICS_USER}@${METRICS_SERVER}" "mkdir -p /opt/citadel-monitoring/grafana/{data,dashboards,datasources}"
+ssh "${METRICS_USER}@${METRICS_SERVER}" "mkdir -p /opt/citadel-monitoring/alertmanager/{data,config}"
+
+# Deploy main Prometheus config
+scp "${CONFIG_PATH}/prometheus/prometheus.yml" "${METRICS_USER}@${METRICS_SERVER}:/opt/citadel-monitoring/prometheus/config/"
+
+# Deploy targets configuration
+scp "${CONFIG_PATH}/prometheus/citadel-targets.yml" "${METRICS_USER}@${METRICS_SERVER}:/opt/citadel-monitoring/prometheus/config/"
+
+# Deploy alerting rules
+scp "${CONFIG_PATH}/prometheus/rules/citadel-alerts.yml" "${METRICS_USER}@${METRICS_SERVER}:/opt/citadel-monitoring/prometheus/rules/"
+
+# Deploy Alertmanager configuration
+if [ -f "${CONFIG_PATH}/alertmanager-webhook-config.yml" ]; then
+    scp "${CONFIG_PATH}/alertmanager-webhook-config.yml" "${METRICS_USER}@${METRICS_SERVER}:/opt/citadel-monitoring/alertmanager/config/alertmanager.yml"
+fi
+
+# Deploy datasource configuration
+scp "${CONFIG_PATH}/grafana/datasources/datasources.yaml" "${METRICS_USER}@${METRICS_SERVER}:/opt/citadel-monitoring/grafana/datasources/"
+
+# Deploy dashboard configurations
+scp "${CONFIG_PATH}/grafana/dashboards/*.json" "${METRICS_USER}@${METRICS_SERVER}:/opt/citadel-monitoring/grafana/dashboards/"
+
+# Set ownership on metrics server
+ssh "${METRICS_USER}@${METRICS_SERVER}" "chown -R prometheus:prometheus /opt/citadel-monitoring/prometheus/"
+ssh "${METRICS_USER}@${METRICS_SERVER}" "chown -R grafana:grafana /opt/citadel-monitoring/grafana/"
+ssh "${METRICS_USER}@${METRICS_SERVER}" "chown -R alertmanager:alertmanager /opt/citadel-monitoring/alertmanager/"
+
+# Restart services on metrics server
+ssh "${METRICS_USER}@${METRICS_SERVER}" "systemctl restart prometheus grafana-server prometheus-alertmanager prometheus-node-exporter"
+
+echo "Monitoring deployment completed following implementation guide!"

@@ -1,0 +1,18 @@
+# Grafana Configuration (Placeholder - will typically be on hx-metrics-server)
+provisioning:
+  dashboards:
+    enabled: true
+    providers:
+      - name: 'ollama-dashboards'
+        folder: 'Ollama LLM Server'
+        type: 'file'
+        disableDeletion: false
+        editable: true
+        options:
+          path: '/opt/citadel/frameworks/monitoring/dashboards' # Placeholder for dashboard files
+  datasources:
+    enabled: true
+    providers:
+      - name: 'prometheus-datasource'
+        type: 'prometheus'
+        url: 'http://localhost:9090' # Assumes Prometheus is local or reachable

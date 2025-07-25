@@ -1,0 +1,33 @@
+# Citadel AI Infrastructure - Git Ignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments 
+citadel_venv/
+venv/
+env/
+.venv/
+
+# Runtime Data
+var/
+logs/
+
+# Sensitive Configuration
+config/secrets/
+*.key
+*.pem
+
+# Temporary Files
+*.tmp
+*.temp
+
+# Model Files (too large for git)
+*.bin
+*.gguf
+
+# OS Generated
+.DS_Store

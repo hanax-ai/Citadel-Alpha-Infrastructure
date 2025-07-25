@@ -1,0 +1,18 @@
+# Ollama Deployed Models Configuration
+models:
+  - name: "phi3:latest"
+    quantization: "Q4_0"
+    description: "Lightweight, efficient model for rapid inference."
+    active: true
+  - name: "openchat:latest"
+    quantization: "Q4_0"
+    description: "Conversational AI with enhanced dialogue capabilities."
+    active: true
+  - name: "mixtral:latest"
+    quantization: "Q4_0"
+    description: "High-performance mixture of experts model for complex reasoning (26GB)."
+    active: true
+  - name: "nous-hermes2-mixtral:latest"
+    quantization: "Q4_0"
+    description: "Enhanced Mixtral variant with improved instruction following (26GB)."
+    active: true

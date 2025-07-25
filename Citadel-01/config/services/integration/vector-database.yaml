@@ -1,0 +1,12 @@
+# Vector Database Integration Configuration (Qdrant)
+vector_db:
+  type: "qdrant"
+  host: "192.168.10.30"
+  port: 6333  # Qdrant HTTP REST API port
+  api_key_secret_name: "QDRANT_API_KEY"
+  collection_name: "llm_embeddings"
+  vector_size: 768  # Dimension for nomic-embed-text model
+  timeout_seconds: 60
+  grpc_port: 6334  # Qdrant gRPC port
+  ollama_embedding_model: "nomic-embed-text"
+  ollama_timeout_seconds: 120

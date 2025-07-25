@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# Sync PostgreSQL Configuration to LLM-02
+# This script updates llm-02 to mirror the PostgreSQL configuration from llm-01
+
+set -e
+
+LLM02_HOST="192.168.10.36"
+CONFIG_DIR="/opt/citadel/config"
+SECRETS_DIR="$CONFIG_DIR/secrets"
+SOURCE_CREDS="/opt/citadel/config/secrets/database-credentials.yaml"
+
+echo "=== PostgreSQL Configuration Sync to LLM-02 ==="
+echo "Target Server: $LLM02_HOST"
+echo "Source Config: $SOURCE_CREDS"
+echo
+
+# Check if source configuration exists
+if [[ ! -f "$SOURCE_CREDS" ]]; then
+    echo "❌ ERROR: Source database credentials file not found: $SOURCE_CREDS"
+    exit 1
+fi
+
+echo "✅ Source configuration found"
+echo
+
+# Create the target directories on llm-02
+echo "📁 Creating directory structure on llm-02..."
+ssh $LLM02_HOST "mkdir -p $SECRETS_DIR"
+ssh $LLM02_HOST "mkdir -p $CONFIG_DIR/global"
+ssh $LLM02_HOST "mkdir -p $CONFIG_DIR/environments"
+
+echo "✅ Directory structure created"
+echo
+
+# Copy the database credentials file
+echo "📋 Copying database credentials to llm-02..."
+scp "$SOURCE_CREDS" "$LLM02_HOST:$SECRETS_DIR/"
+
+# Set proper permissions
+ssh $LLM02_HOST "chmod 600 $SECRETS_DIR/database-credentials.yaml"
+ssh $LLM02_HOST "chown agent0:agent0 $SECRETS_DIR/database-credentials.yaml"
+
+echo "✅ Database credentials synced"
+echo
+
+# Copy global configuration if it exists
+if [[ -f "/opt/citadel/config/global/citadel.yaml" ]]; then
+    echo "📋 Copying global configuration..."
+    scp "/opt/citadel/config/global/citadel.yaml" "$LLM02_HOST:$CONFIG_DIR/global/"
+    echo "✅ Global configuration synced"
+fi
+
+# Copy production environment configuration
+if [[ -f "/opt/citadel/config/environments/production.yaml" ]]; then
+    echo "📋 Copying production environment configuration..."
+    scp "/opt/citadel/config/environments/production.yaml" "$LLM02_HOST:$CONFIG_DIR/environments/"
+    echo "✅ Production environment configuration synced"
+fi
+
+echo
+echo "🔍 Verifying configuration on llm-02..."
+
+# Test the PostgreSQL connection from llm-02
+echo "Testing PostgreSQL connection from llm-02..."
+ssh $LLM02_HOST 'PGPASSWORD="CitadelLLM#2025\$SecurePass!" psql -h 192.168.10.35 -p 5432 -U citadel_llm_user -d citadel_llm_db -c "SELECT current_database(), current_user;" 2>/dev/null' && echo "✅ PostgreSQL connection successful" || echo "❌ PostgreSQL connection failed"
+
+echo
+echo "📋 Configuration Summary on llm-02:"
+ssh $LLM02_HOST "cat $SECRETS_DIR/database-credentials.yaml"
+
+echo
+echo "🎉 PostgreSQL configuration sync to llm-02 completed!"
+echo
+echo "Next Steps:"
+echo "1. Update any application configurations on llm-02 to use port 5432"
+echo "2. Test database connectivity from your applications"
+echo "3. Update health check configurations if needed"

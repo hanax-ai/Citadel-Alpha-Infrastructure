@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Validate operational dashboards deployment
+
+METRICS_SERVER="192.168.10.37"
+GRAFANA_URL="http://${METRICS_SERVER}:3000"
+
+echo "Validating operational dashboard deployment..."
+
+# Check Prometheus targets
+echo "Checking Prometheus targets:"
+curl -s "http://${METRICS_SERVER}:9090/api/v1/targets" | jq '.data.activeTargets[] | {job: .labels.job, instance: .labels.instance, health: .health}'
+
+# Check Grafana health
+echo "Checking Grafana health:"
+curl -s "${GRAFANA_URL}/api/health" | jq '.'
+
+# List available dashboards
+echo "Checking available dashboards:"
+curl -s "${GRAFANA_URL}/api/search" | jq '.[] | {title: .title, uid: .uid}'
+
+echo "Validation completed!"

@@ -1,0 +1,61 @@
+apiVersion: 1
+
+datasources:
+  # External Prometheus Server
+  - name: Prometheus-HX-Monitoring
+    type: prometheus
+    access: proxy
+    url: http://192.168.10.37:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "60s"
+      httpMethod: "GET"
+    secureJsonData: {}
+
+  # Citadel PostgreSQL Database (for dashboard queries)
+  - name: Citadel-PostgreSQL
+    type: postgres
+    access: proxy
+    url: 192.168.10.35:5432
+    database: citadel_llm_db
+    user: grafana_user
+    editable: true
+    jsonData:
+      sslmode: "prefer"
+      maxOpenConns: 100
+      maxIdleConns: 100
+      maxIdleConnsAuto: true
+      connMaxLifetime: 14400
+      postgresVersion: 1300
+      timescaledb: false
+    secureJsonData:
+      password: "GrafanaDB#2025$SecurePass!"
+
+  # Citadel Redis (for cache metrics)
+  - name: Citadel-Redis
+    type: redis-datasource
+    access: proxy
+    url: redis://192.168.10.35:6379
+    editable: true
+    jsonData:
+      client: "standalone"
+      poolSize: 5
+      timeout: 10
+      pingInterval: 0
+      pipelineWindow: 0
+
+  # Logs datasource (if Loki is available on monitoring server)
+  - name: Loki-HX-Monitoring
+    type: loki
+    access: proxy
+    url: http://192.168.10.37:3100
+    editable: true
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - datasourceUid: "prometheus-hx-monitoring"
+          matcherRegex: "traceID=(\\w+)"
+          name: "TraceID"
+          url: "$${__value.raw}"

@@ -1,0 +1,13 @@
+[Unit]
+Description=OpenWebUI Service
+After=network.target
+
+[Service]
+WorkingDirectory=/path/to/open-webui/backend
+ExecStart=/path/to/open-webui/backend/.venv/bin/uvicorn app:app --host 0.0.0.0 --port 8080
+Restart=always
+User=your-username
+EnvironmentFile=/path/to/open-webui/.env
+
+[Install]
+WantedBy=multi-user.target

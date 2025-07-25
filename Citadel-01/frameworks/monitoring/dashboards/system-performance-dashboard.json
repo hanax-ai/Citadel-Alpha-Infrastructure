@@ -1,0 +1,143 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Citadel System Performance Overview",
+    "tags": ["system", "performance", "infrastructure"],
+    "style": "dark",
+    "timezone": "UTC",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "CPU Usage - HX-Server-02",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "red", "value": 90}
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\",job=\"citadel-hx-server-02-system\"}[5m])) * 100)",
+            "legendFormat": "CPU Usage %"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Memory Usage - HX-Server-02",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 80},
+                {"color": "red", "value": 95}
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "expr": "(1 - (node_memory_MemAvailable_bytes{job=\"citadel-hx-server-02-system\"} / node_memory_MemTotal_bytes{job=\"citadel-hx-server-02-system\"})) * 100",
+            "legendFormat": "Memory Usage %"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Disk Usage - Root",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 80},
+                {"color": "red", "value": 95}
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "expr": "100 - ((node_filesystem_avail_bytes{job=\"citadel-hx-server-02-system\",mountpoint=\"/\"} * 100) / node_filesystem_size_bytes{job=\"citadel-hx-server-02-system\",mountpoint=\"/\"})",
+            "legendFormat": "Disk Usage %"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Network I/O",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(node_network_receive_bytes_total{job=\"citadel-hx-server-02-system\",device!~\"lo\"}[5m])",
+            "legendFormat": "RX bytes/sec"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "CPU Usage Over Time",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "targets": [
+          {
+            "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\",job=\"citadel-hx-server-02-system\"}[5m])) * 100)",
+            "legendFormat": "CPU Usage %"
+          },
+          {
+            "expr": "avg(rate(node_cpu_seconds_total{mode=\"user\",job=\"citadel-hx-server-02-system\"}[5m])) * 100",
+            "legendFormat": "User CPU %"
+          },
+          {
+            "expr": "avg(rate(node_cpu_seconds_total{mode=\"system\",job=\"citadel-hx-server-02-system\"}[5m])) * 100",
+            "legendFormat": "System CPU %"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Memory Usage Over Time",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "targets": [
+          {
+            "expr": "node_memory_MemTotal_bytes{job=\"citadel-hx-server-02-system\"}",
+            "legendFormat": "Total Memory"
+          },
+          {
+            "expr": "node_memory_MemAvailable_bytes{job=\"citadel-hx-server-02-system\"}",
+            "legendFormat": "Available Memory"
+          },
+          {
+            "expr": "node_memory_MemTotal_bytes{job=\"citadel-hx-server-02-system\"} - node_memory_MemAvailable_bytes{job=\"citadel-hx-server-02-system\"}",
+            "legendFormat": "Used Memory"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+# Metrics Server Integration Configuration (Prometheus/Grafana)
+metrics_server:
+  prometheus_host: "192.168.10.37"
+  prometheus_port: 9090
+  grafana_host: "192.168.10.37"
+  grafana_port: 3000
+  pushgateway_enabled: false # Use if services can't be scraped directly
+  pushgateway_url: "http://localhost:9091" # Example

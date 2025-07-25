@@ -1,0 +1,20 @@
+[Unit]
+Description=Citadel Gateway Recovery Service
+Documentation=https://citadel.local/docs
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+WorkingDirectory=/opt/citadel
+
+# Recovery script execution
+ExecStart=/opt/citadel/bin/citadel-recovery-handler
+
+# Logging
+StandardOutput=append:/opt/citadel/logs/api-gateway/recovery.log
+StandardError=append:/opt/citadel/logs/api-gateway/recovery.log
+SyslogIdentifier=citadel-recovery
+
+[Install]
+WantedBy=multi-user.target
