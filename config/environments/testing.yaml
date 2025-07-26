@@ -1,0 +1,5 @@
+# Testing Environment Configuration (Placeholder)
+project:
+  environment: "testing"
+
+# Add testing-specific overrides here

@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+"""
+Citadel Configuration Management CLI
+Command-line interface for managing Citadel LLM configuration
+"""
+
+import click
+import sys
+import os
+import yaml
+import json
+from pathlib import Path
+
+# Add the config directory to Python path
+sys.path.insert(0, '/opt/citadel-02/config')
+
+try:
+    from settings_new import settings, CitadelSettings
+    from config_manager import CitadelConfig
+except ImportError as e:
+    click.echo(f"❌ Error importing configuration modules: {e}")
+    sys.exit(1)
+
+@click.group()
+def cli():
+    """Citadel Configuration Management CLI"""
+    pass
+
+@cli.command()
+@click.option('--environment', '-e', default='production', help='Environment to validate')
+def validate(environment):
+    """Validate configuration for specified environment"""
+    click.echo(f"🔍 Validating configuration for {environment} environment...")
+    
+    try:
+        # Test Pydantic settings
+        settings_obj = CitadelSettings()
+        click.echo("✅ Pydantic settings validation passed")
+        
+        # Test legacy config manager
+        config_manager = CitadelConfig(environment)
+        validation_results = config_manager.validate_config()
+        
+        click.echo(f"\n📋 Configuration validation results:")
+        for key, value in validation_results.items():
+            status = "✅" if value else "❌"
+            click.echo(f"  {status} {key}: {value}")
+            
+        # Overall status
+        all_passed = all(isinstance(v, bool) and v for v in validation_results.values())
+        if all_passed:
+            click.echo(f"\n🎉 All configuration validation checks passed for {environment}")
+        else:
+            click.echo(f"\n⚠️  Some configuration validation checks failed for {environment}")
+            sys.exit(1)
+            
+    except Exception as e:
+        click.echo(f"❌ Configuration validation failed: {e}")
+        sys.exit(1)
+
+@cli.command()
+@click.option('--environment', '-e', default='production', help='Environment to show')
+@click.option('--format', '-f', type=click.Choice(['json', 'yaml']), default='json', help='Output format')
+@click.option('--hide-secrets', is_flag=True, default=True, help='Hide sensitive information')
+def show(environment, format, hide_secrets):
+    """Show configuration for specified environment"""
+    try:
+        config_manager = CitadelConfig(environment)
+        config_data = config_manager.get_merged_config()
+        
+        if hide_secrets:
+            # Hide sensitive data
+            if 'database' in config_data:
+                config_data['database']['password'] = '***HIDDEN***'
+            if 'secret_key' in config_data:
+                config_data['secret_key'] = '***HIDDEN***'
+        
+        if format == 'yaml':
+            click.echo(yaml.dump(config_data, default_flow_style=False, indent=2))
+        else:
+            click.echo(json.dumps(config_data, indent=2, default=str))
+            
+    except Exception as e:
+        click.echo(f"❌ Error showing configuration: {e}")
+        sys.exit(1)
+
+@cli.command()
+def test_connections():
+    """Test connections to external services"""
+    click.echo("🔌 Testing connections to external services...")
+    
+    try:
+        import requests
+        from requests.adapters import HTTPAdapter
+        from urllib3.util.retry import Retry
+        
+        # Setup session with retries
+        session = requests.Session()
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        
+        # Test Ollama
+        try:
+            response = session.get("http://localhost:11434/api/version", timeout=5)
+            if response.status_code == 200:
+                version_data = response.json()
+                click.echo(f"✅ Ollama API: Connected (v{version_data.get('version', 'unknown')})")
+            else:
+                click.echo(f"❌ Ollama API: HTTP {response.status_code}")
+        except Exception as e:
+            click.echo(f"❌ Ollama API: Connection failed - {e}")
+        
+        # Test PostgreSQL
+        try:
+            import psycopg2
+            db_config = settings.database
+            conn = psycopg2.connect(
+                host=db_config.host,
+                port=db_config.port,
+                database=db_config.database,
+                user=db_config.username,
+                password=db_config.password,
+                connect_timeout=5
+            )
+            conn.close()
+            click.echo(f"✅ PostgreSQL: Connected ({db_config.host}:{db_config.port})")
+        except Exception as e:
+            click.echo(f"❌ PostgreSQL: Connection failed - {e}")
+        
+        # Test Prometheus
+        try:
+            response = session.get("http://192.168.10.37:9090/api/v1/status/config", timeout=5)
+            if response.status_code == 200:
+                click.echo("✅ Prometheus: Connected")
+            else:
+                click.echo(f"❌ Prometheus: HTTP {response.status_code}")
+        except Exception as e:
+            click.echo(f"❌ Prometheus: Connection failed - {e}")
+        
+        # Test Grafana
+        try:
+            response = session.get("http://192.168.10.37:3000/api/health", timeout=5)
+            if response.status_code == 200:
+                click.echo("✅ Grafana: Connected")
+            else:
+                click.echo(f"❌ Grafana: HTTP {response.status_code}")
+        except Exception as e:
+            click.echo(f"❌ Grafana: Connection failed - {e}")
+            
+    except ImportError as e:
+        click.echo(f"❌ Missing required packages: {e}")
+        sys.exit(1)
+
+@cli.command()
+@click.option('--environment', '-e', default='production', help='Environment')
+def models(environment):
+    """Show model configuration and status"""
+    click.echo(f"🤖 Model configuration for {environment} environment:")
+    
+    try:
+        config_manager = CitadelConfig(environment)
+        model_config = config_manager.get_model_config()
+        
+        click.echo(f"\n📊 Available Models:")
+        for model_name, config in model_config['models'].items():
+            click.echo(f"  • {model_name}")
+            click.echo(f"    Role: {config['role']}")
+            click.echo(f"    Size: {config['size']}")
+            click.echo(f"    Parameters: {config['parameters']}")
+            click.echo(f"    Use Cases: {', '.join(config['use_cases'])}")
+            click.echo()
+        
+        click.echo(f"🎯 Model Routing:")
+        for task_type, model_name in model_config['model_routing'].items():
+            click.echo(f"  {task_type}: {model_name}")
+        
+        click.echo(f"\n🔄 Default Model: {model_config['default_model']}")
+        
+        # Test Ollama model status
+        try:
+            import requests
+            response = requests.get("http://localhost:11434/api/tags", timeout=10)
+            if response.status_code == 200:
+                available_models = response.json()['models']
+                click.echo(f"\n📋 Ollama Status:")
+                for model in available_models:
+                    size_gb = round(model['size'] / (1024**3), 1)
+                    click.echo(f"  ✅ {model['name']} ({size_gb}GB)")
+            else:
+                click.echo(f"\n❌ Could not fetch Ollama model status")
+        except Exception as e:
+            click.echo(f"\n❌ Error checking Ollama models: {e}")
+            
+    except Exception as e:
+        click.echo(f"❌ Error showing model configuration: {e}")
+        sys.exit(1)
+
+@cli.command()
+def health():
+    """System health check"""
+    click.echo("🏥 Citadel System Health Check")
+    click.echo("=" * 40)
+    
+    health_status = True
+    
+    # Check system basics
+    click.echo("\n📁 File System:")
+    required_paths = [
+        "/opt/citadel-02",
+        "/opt/citadel-02/config",
+        "/opt/citadel-02/logs",
+        "/opt/citadel-02/citadel_venv"
+    ]
+    
+    for path in required_paths:
+        if Path(path).exists():
+            click.echo(f"  ✅ {path}")
+        else:
+            click.echo(f"  ❌ {path} (missing)")
+            health_status = False
+    
+    # Check services
+    click.echo("\n🔧 Services:")
+    try:
+        import subprocess
+        
+        # Check Ollama service
+        result = subprocess.run(['systemctl', 'is-active', 'ollama-02.service'], 
+                               capture_output=True, text=True)
+        if result.stdout.strip() == 'active':
+            click.echo("  ✅ ollama-02.service")
+        else:
+            click.echo("  ❌ ollama-02.service (not active)")
+            health_status = False
+            
+    except Exception as e:
+        click.echo(f"  ❌ Error checking services: {e}")
+        health_status = False
+    
+    # Check configuration
+    click.echo("\n⚙️  Configuration:")
+    try:
+        settings_obj = CitadelSettings()
+        click.echo("  ✅ Settings loaded successfully")
+    except Exception as e:
+        click.echo(f"  ❌ Settings validation failed: {e}")
+        health_status = False
+    
+    # Overall status
+    click.echo("\n" + "=" * 40)
+    if health_status:
+        click.echo("🎉 System health: ALL GOOD")
+    else:
+        click.echo("⚠️  System health: ISSUES DETECTED")
+        sys.exit(1)
+
+@cli.command()
+@click.argument('key')
+@click.option('--environment', '-e', default='production', help='Environment')
+def get(key, environment):
+    """Get specific configuration value"""
+    try:
+        config_manager = CitadelConfig(environment)
+        config_data = config_manager.get_merged_config()
+        
+        # Navigate nested keys (e.g., database.host)
+        keys = key.split('.')
+        value = config_data
+        
+        for k in keys:
+            if isinstance(value, dict) and k in value:
+                value = value[k]
+            else:
+                click.echo(f"❌ Key '{key}' not found in configuration")
+                sys.exit(1)
+        
+        click.echo(value)
+        
+    except Exception as e:
+        click.echo(f"❌ Error getting configuration value: {e}")
+        sys.exit(1)
+
+if __name__ == '__main__':
+    cli()

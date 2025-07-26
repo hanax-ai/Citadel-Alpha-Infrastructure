@@ -1,0 +1,58 @@
+# DeepCoder-14B Configuration
+model: "deepcoder:14b"
+role: "code_generation"
+
+optimization:
+  temperature: 0.3
+  top_p: 0.95
+  max_tokens: 2048
+  context_length: 8192
+  
+coding_settings:
+  language_support:
+    - python
+    - javascript
+    - sql
+    - yaml
+    - bash
+  frameworks:
+    - fastapi
+    - flask
+    - sqlalchemy
+    - ollama
+  
+business_applications:
+  automation_scripts: true
+  api_development: true
+  system_integration: true
+  monitoring_code: true
+  database_operations: true
+  
+performance:
+  target_response_time: 20
+  memory_allocation: "16GB"
+  concurrent_requests: 3
+  
+quality_checks:
+  syntax_validation: true
+  best_practices: true
+  security_considerations: true
+  documentation_generation: true
+
+# Performance Metrics from Testing
+baseline_tests:
+  basic_code_generation: "✅ Passed - Detailed explanations with code"
+  postgresql_integration: "✅ Passed - 22KB comprehensive response"
+  fastapi_endpoints: "✅ Passed - 20KB detailed implementation"
+  ollama_integration: "✅ Passed - 8.6KB integration code"
+  business_automation: "✅ Passed - Report generation and email"
+  monitoring_code: "✅ Passed - Prometheus integration"
+  complex_class_generation: "78s response time (above 20s target)"
+  code_completion: "✅ Passed - Function completion capabilities"
+  
+system_resources:
+  model_size: "9.0GB"
+  quantization: "Q4_K_M"
+  parameters: "14.8B"
+  context_length: "131072"
+  architecture: "qwen2"

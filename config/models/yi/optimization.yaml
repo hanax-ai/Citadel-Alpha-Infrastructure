@@ -1,0 +1,43 @@
+# Yi-34B Optimization Configuration
+model: "yi:34b-chat"
+role: "advanced_reasoning"
+
+optimization:
+  temperature: 0.7
+  top_p: 0.9
+  max_tokens: 4096
+  context_length: 32768
+  
+business_settings:
+  strategic_analysis: true
+  decision_support: true
+  complex_reasoning: true
+  analytical_framework: true
+  
+performance:
+  target_response_time: 30
+  memory_allocation: "36GB"
+  concurrent_requests: 2
+  
+use_cases:
+  - strategic_planning
+  - market_analysis
+  - risk_assessment
+  - decision_matrices
+  - competitive_analysis
+  - business_intelligence
+
+# Performance Metrics from Testing
+baseline_tests:
+  basic_reasoning: "✅ Passed - Comprehensive AI analysis"
+  complex_problem_solving: "✅ Passed - Structured strategic framework"
+  response_time: "34s (slightly above 30s target)"
+  response_quality: "504 words average for complex queries"
+  strategic_analysis: "✅ Passed - Detailed Series B funding analysis"
+  
+system_resources:
+  ollama_memory_usage: "647MB base"
+  model_size: "19GB"
+  quantization: "Q4_0"
+  parameters: "34.4B"
+  context_length: "4096"

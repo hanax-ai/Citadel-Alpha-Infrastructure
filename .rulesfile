@@ -3,8 +3,10 @@
 ## R1.0: Virtual Environments
 
 - **Do not create new virtual environments ever**, unless explicitly requested
+- **Use only the existing citadel_venv virtual environment**
 - Work within the existing environment setup
 - Respect the current Python environment configuration
+- Virtual environment location: citadel_venv (activate with: source citadel_venv/bin/activate)
 
 ## R2.0: Task Management
 
@@ -19,7 +21,7 @@
 - hostname: hx-llm-server-02
 - ip address: 192.168.10.28
 
-## R.4:Connect tro Postgres **
+## R.4: Connect to Postgres
 
 - PGPASSWORD="CitadelLLM#2025\$SecurePass!" psql -h 192.168.10.35 -U citadel_llm_user -d citadel_llm_db -c "\du"
 

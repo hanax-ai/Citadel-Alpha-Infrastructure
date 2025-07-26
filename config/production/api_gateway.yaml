@@ -1,0 +1,76 @@
+# Citadel LLM-02 Production Configuration
+service:
+  name: "Citadel LLM-02 Business API Gateway"
+  version: "2.0.0"
+  environment: "production"
+  
+api_gateway:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  timeout: 300
+  
+models:
+  deepseek-r1:
+    name: "deepseek-r1:32b"
+    role: "strategic_research_intelligence"
+    timeout: 180
+    concurrency: 2
+  
+  jarvis:
+    name: "hadad/JARVIS:latest"
+    role: "advanced_business_intelligence"
+    timeout: 120
+    concurrency: 1
+    
+  qwen:
+    name: "qwen:1.8b"
+    role: "high_volume_operations"
+    timeout: 30
+    concurrency: 4
+    
+  deepcoder:
+    name: "deepcoder:14b"
+    role: "code_generation_systems"
+    timeout: 90
+    concurrency: 2
+    
+  yi:
+    name: "yi:34b-chat"
+    role: "advanced_reasoning"
+    timeout: 120
+    concurrency: 2
+
+external_services:
+  postgresql:
+    host: "192.168.10.35"
+    port: 5432
+    database: "citadel_llm_db"
+    user: "citadel_llm_user"
+    
+  vector_database:
+    host: "192.168.10.30"
+    port: 6333
+    collections: 5
+    
+  monitoring:
+    prometheus_host: "192.168.10.37"
+    prometheus_port: 9090
+    grafana_port: 3000
+    
+  web_server:
+    host: "192.168.10.38"
+    port: 80
+
+performance:
+  target_response_times:
+    qwen: 5.0
+    deepcoder: 60.0
+    jarvis: 90.0
+    yi: 120.0
+    deepseek: 180.0
+    
+  knowledge_base:
+    total_vectors: 15847
+    search_timeout: 2.0
+    max_results: 5
