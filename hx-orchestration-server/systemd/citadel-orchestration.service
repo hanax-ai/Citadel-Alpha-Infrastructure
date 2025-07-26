@@ -1,0 +1,43 @@
+[Unit]
+Description=Citadel AI Operating System - Orchestration Hub v2.0
+Documentation=https://docs.citadel-ai.com/orchestration-hub
+After=network.target redis.service postgresql.service
+Wants=redis.service
+PartOf=citadel-ai-operating-system.target
+
+[Service]
+Type=exec
+User=agent0
+Group=agent0
+WorkingDirectory=/opt/citadel-orca/hx-orchestration-server
+Environment=PATH=/opt/citadel-orca/hx-orchestration-server/citadel_venv/bin
+Environment=CITADEL_ENV=production
+Environment=HANA_X_LAB_MODE=true
+Environment=ORCHESTRATION_HUB_ROLE=primary
+ExecStart=/opt/citadel-orca/hx-orchestration-server/citadel_venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4 --access-log
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+Restart=always
+RestartSec=3
+TimeoutStartSec=120
+TimeoutStopSec=30
+
+# Enterprise Logging Configuration
+StandardOutput=append:/opt/citadel-orca/hx-orchestration-server/logs/orchestration-hub.log
+StandardError=append:/opt/citadel-orca/hx-orchestration-server/logs/orchestration-error.log
+SyslogIdentifier=citadel-orchestration-hub
+
+# Security Configuration
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/citadel-orca/hx-orchestration-server/logs
+
+# Resource Limits for Enterprise Workloads
+LimitNOFILE=65536
+LimitNPROC=32768
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=citadel-ai-operating-system.target

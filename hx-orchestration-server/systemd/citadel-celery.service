@@ -1,0 +1,44 @@
+[Unit]
+Description=HX-Orchestration-Server Celery Worker
+Documentation=https://docs.citadel-ai.com/orchestration
+After=network.target redis.service citadel-orchestration.service
+Wants=redis.service
+PartOf=citadel-orchestration.service
+StartLimitBurst=3
+StartLimitIntervalSec=60
+
+[Service]
+Type=exec
+User=citadel
+Group=citadel
+WorkingDirectory=/opt/citadel-orca/hx-orchestration-server
+Environment=PATH=/opt/citadel-venv/bin
+Environment=PYTHONPATH=/opt/citadel-orca/hx-orchestration-server
+ExecStart=/opt/citadel-venv/bin/celery -A celery_app worker --loglevel=info --concurrency=4 --pool=prefork
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+TimeoutStartSec=60
+TimeoutStopSec=30
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/citadel-orca/hx-orchestration-server/logs
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=citadel-celery
+
+# Health monitoring
+WatchdogSec=60
+
+[Install]
+WantedBy=multi-user.target

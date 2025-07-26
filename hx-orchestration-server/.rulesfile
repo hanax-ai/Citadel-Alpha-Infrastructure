@@ -1,0 +1,43 @@
+# Project Rules
+
+## R1.0: Virtual Environments
+
+- **Do not create new virtual environments ever**, unless explicitly requested
+- **Use only the existing citadel_venv virtual environment**
+- Work within the existing environment setup
+- Respect the current Python environment configuration
+- Virtual environment location: citadel_venv (activate with: source citadel_venv/bin/activate)
+
+## R2.0: Task Management
+
+- **Freelancing is prohibited** - follow the task as requested
+- If you have questions, ask for clarification
+- If you need help, request assistance
+- Stay focused on the assigned objectives
+
+## R3.0: Server Config
+
+- **Server is**
+- hostname: hx-orchestration-server
+- ip address: 192.168.10.31
+
+## R.4: Connect to Postgres
+
+- PGPASSWORD="CitadelLLM#2025\$SecurePass!" psql -h 192.168.10.35 -U citadel_llm_user -d citadel_llm_db -c "\du"
+
+## Metric Server
+
+- Prometheus: <http://192.168.10.37:9090>
+Grafana: <http://192.168.10.37:3000> (admin/admin)
+Alertmanager: <http://192.168.10.37:9093>
+Node Exporter: <http://192.168.10.37:9100>
+
+R5.0: Code Development Standards
+R5.1: Object-Oriented Programming (OOP) Best Practices: All new code and refactoring efforts must adhere to established OOP principles, including encapsulation, inheritance, polymorphism, and abstraction. Focus on creating modular, maintainable, and extensible code.
+
+R5.2: Utility and Helper Classes: Utilize utility and helper classes to encapsulate common functionalities and promote code organization. These classes should be designed for specific, reusable purposes.
+
+R5.3: Common Class Library: Establish and contribute to a common class library for shared functionalities that can be reused across different parts of the project. This library should be well-documented and easily accessible.
+
+R5.4: Code and Configuration File Size: No single code file or configuration file should exceed 500 lines. Break down larger files into smaller, more manageable modules or functions to improve readability and maintainability.
+
