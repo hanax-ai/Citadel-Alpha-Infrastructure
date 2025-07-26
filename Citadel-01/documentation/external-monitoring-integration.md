@@ -1,6 +1,6 @@
-# External Monitoring Integration for HX-Server-02
+# External Monitoring Integration for HX-Enterprise-AI-Infrastructure
 
-This document describes the complete integration of HX-Server-02 Citadel infrastructure with external Prometheus/Grafana monitoring at 192.168.10.37.
+This document describes the complete integration of HX-Enterprise-AI-Infrastructure with external Prometheus/Grafana monitoring at 192.168.10.37.
 
 ## Architecture Overview
 
@@ -11,29 +11,59 @@ External Monitoring Infrastructure (192.168.10.37)
 ├── Alertmanager (:9093) - Alert routing and notifications
 └── Node Exporter (:9100) - System metrics collection
 
-HX-Server-02 (192.168.10.31)
+HX-LLM-Server-01 (192.168.10.34) - Primary AI/ML Server
+├── Citadel Gateway (:8002) - AI orchestration with metrics endpoints
+├── TensorFlow Environment - TensorFlow 2.19.0 with GPU acceleration
+├── PyTorch Environment - PyTorch 2.5.1+cu121 with GPU acceleration
+├── Dual NVIDIA GeForce RTX 4070 Ti SUPER GPUs (Compute Capability 8.9)
+├── CUDA Toolkit 12.9.86 with cuDNN 9.11.0
+└── NVIDIA Driver 575.64.03
+
+HX-Server-02 (192.168.10.31) - Secondary Infrastructure
 ├── Citadel Gateway (:8000) - Main application with metrics endpoints
 ├── Ollama Service (:11434) - LLM inference engine
 ├── PostgreSQL (:5432) - Database with monitoring
 └── Redis (:6379) - Caching layer with monitoring
 ```
 
+## Validated AI Environment (HX-LLM-Server-01)
+
+### Hardware Configuration
+- **GPUs**: 2x NVIDIA GeForce RTX 4070 Ti SUPER
+- **Compute Capability**: 8.9
+- **NVIDIA Driver**: 575.64.03
+- **CUDA Toolkit**: 12.9.86
+- **cuDNN**: 9.11.0
+
+### Software Environment
+- **Python**: 3.12.3
+- **TensorFlow**: 2.19.0 (tensorflow_env) - GPU acceleration validated
+- **PyTorch**: 2.5.1+cu121 (pytorch_env) - GPU acceleration validated
+- **Environment Status**: Production-ready for AI/ML workloads
+
 ## Integration Components
 
 ### 1. Metrics Collection
 
-**Citadel Metrics Endpoint: `/metrics`**
+**HX-LLM-Server-01 AI Metrics Endpoint: `:8002/metrics`**
+- GPU metrics (temperature, utilization, memory, compute capability)
+- AI framework metrics (TensorFlow/PyTorch operations, model performance)
+- CUDA/cuDNN performance metrics
+- Model inference latency and throughput
+- Environment-specific metrics (pytorch_env, tensorflow_env)
+
+**HX-Server-02 Citadel Metrics Endpoint: `:8000/metrics`**
 - System metrics (CPU, memory, disk, network)
-- GPU metrics (temperature, utilization, memory)
 - Application metrics (request count, response time, errors)
 - Database metrics (connections, query performance)
 - Custom business metrics
 
 **Health Check Endpoints:**
-- `/health/` - Comprehensive health status
+- `/health/` - Comprehensive health status including GPU status
 - `/health/quick` - Fast health check
-- `/health/ready` - Readiness probe
+- `/health/ready` - Readiness probe with AI environment validation
 - `/health/live` - Liveness probe
+- `/health/gpu` - GPU-specific health monitoring
 
 ### 2. Alert Management
 
@@ -58,13 +88,34 @@ monitoring:
   external_grafana_url: "http://192.168.10.37:3000"
   external_alertmanager_url: "http://192.168.10.37:9093"
   external_node_exporter_url: "http://192.168.10.37:9100"
-  metrics_endpoint: "/metrics"
+  
+  # HX-LLM-Server-01 Configuration
+  hx_llm_server_01:
+    metrics_endpoint: ":8002/metrics"
+    gpu_monitoring: true
+    ai_framework_monitoring: true
+    environment_monitoring: ["pytorch_env", "tensorflow_env"]
+    
+  # HX-Server-02 Configuration  
+  hx_server_02:
+    metrics_endpoint: ":8000/metrics"
+    
   metrics_interval: 30
   alerts_webhook: "/webhooks/alerts"
 ```
 
 #### Prometheus Scrape Targets (`/opt/citadel/config/monitoring/prometheus/citadel-targets.yml`)
 ```yaml
+# HX-LLM-Server-01 AI Infrastructure
+- targets: ['192.168.10.34:8002']
+  labels:
+    job: citadel-ai-gateway
+    cluster: hx-llm-server-01
+    environment: production
+    service: citadel-ai-gateway
+    gpu_enabled: true
+    
+# HX-Server-02 Infrastructure  
 - targets: ['192.168.10.31:8000']
   labels:
     job: citadel-gateway
@@ -74,18 +125,24 @@ monitoring:
 ```
 
 #### Alert Rules (`/opt/citadel/config/monitoring/prometheus/citadel-alerts.yml`)
-- Service availability monitoring
+- Service availability monitoring (both HX-LLM-Server-01 and HX-Server-02)
 - Resource utilization thresholds
 - Performance degradation detection
 - Database health monitoring
-- GPU temperature monitoring
+- GPU temperature and utilization monitoring
+- AI framework performance monitoring
+- CUDA/cuDNN operational status
+- Model inference performance thresholds
 
 ### 4. Grafana Dashboards
 
 **Available Dashboards:**
+- HX-Enterprise-AI-Infrastructure Overview
+- HX-LLM-Server-01 AI Performance Monitoring
+- GPU Performance and Temperature Analysis
+- TensorFlow/PyTorch Environment Metrics
 - HX-Server-02 System Overview
 - Citadel Application Metrics
-- GPU Performance Monitoring
 - Database Performance Analysis
 - Alert Management Dashboard
 
@@ -100,9 +157,10 @@ monitoring:
 
 ### Prerequisites
 1. External monitoring infrastructure running at 192.168.10.37
-2. Network connectivity between HX-Server-02 and monitoring infrastructure
-3. Citadel application deployed and running
-4. Administrative access to both systems
+2. Network connectivity between HX-Enterprise-AI-Infrastructure and monitoring infrastructure
+3. HX-LLM-Server-01 AI environment validated (TensorFlow 2.19.0, PyTorch 2.5.1+cu121)
+4. HX-Server-02 Citadel application deployed and running
+5. Administrative access to both systems
 
 ### Step 1: Deploy Citadel Monitoring Integration
 ```bash
@@ -123,7 +181,32 @@ Add to `/etc/prometheus/prometheus.yml` on 192.168.10.37:
 
 ```yaml
 scrape_configs:
-  # Citadel Gateway metrics
+  # HX-LLM-Server-01 AI Gateway metrics
+  - job_name: 'citadel-ai-hx-llm-server-01'
+    static_configs:
+      - targets: ['192.168.10.34:8002']
+        labels:
+          cluster: 'hx-llm-server-01'
+          environment: 'production'
+          gpu_enabled: 'true'
+          ai_frameworks: 'tensorflow,pytorch'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # HX-LLM-Server-01 GPU health monitoring
+  - job_name: 'citadel-gpu-hx-llm-server-01'
+    static_configs:
+      - targets: ['192.168.10.34:8002']
+        labels:
+          cluster: 'hx-llm-server-01'
+          environment: 'production'
+          gpu_model: 'rtx-4070-ti-super'
+    metrics_path: '/health/gpu'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # HX-Server-02 Citadel Gateway metrics
   - job_name: 'citadel-hx-server-02'
     static_configs:
       - targets: ['192.168.10.31:8000']
@@ -134,7 +217,7 @@ scrape_configs:
     scrape_interval: 30s
     scrape_timeout: 10s
 
-  # Citadel health monitoring
+  # HX-Server-02 health monitoring
   - job_name: 'citadel-health-hx-server-02'
     static_configs:
       - targets: ['192.168.10.31:8000']
@@ -152,6 +235,15 @@ Add to `/etc/alertmanager/alertmanager.yml` on 192.168.10.37:
 
 ```yaml
 receivers:
+  - name: 'citadel-hx-llm-server-01-webhook'
+    webhook_configs:
+      - url: 'http://192.168.10.34:8002/webhooks/alerts'
+        send_resolved: true
+        http_config:
+          basic_auth:
+            username: 'alertmanager'
+            password: 'webhook-secret-key'
+            
   - name: 'citadel-hx-server-02-webhook'
     webhook_configs:
       - url: 'http://192.168.10.31:8000/webhooks/alerts'
@@ -169,6 +261,11 @@ route:
   receiver: 'web.hook'
   routes:
     - match:
+        cluster: hx-llm-server-01
+      receiver: 'citadel-hx-llm-server-01-webhook'
+      group_wait: 5s
+      repeat_interval: 3m
+    - match:
         cluster: hx-server-02
       receiver: 'citadel-hx-server-02-webhook'
       group_wait: 10s
@@ -185,16 +282,18 @@ route:
 ### Step 5: Verify Integration
 
 ```bash
-# Test webhook integration
+# Test HX-LLM-Server-01 AI integration
+curl http://192.168.10.34:8002/metrics
+curl http://192.168.10.34:8002/health/gpu
+curl http://192.168.10.34:8002/health/
+
+# Test HX-Server-02 integration
 /opt/citadel/bin/test-webhook-integration
-
-# Check metrics endpoint
 curl http://192.168.10.31:8000/metrics
-
-# Verify health checks
 curl http://192.168.10.31:8000/health/
 
 # Check active alerts
+curl http://192.168.10.34:8002/webhooks/alerts/active
 curl http://192.168.10.31:8000/webhooks/alerts/active
 ```
 
@@ -224,11 +323,16 @@ curl http://192.168.10.31:8000/webhooks/alerts/active
 
 ### Critical Alerts (Immediate Response)
 - **ServiceDown** → Automatic service restart
+- **GPUTemperatureHigh** → Thermal throttling and workload reduction
+- **GPUMemoryFull** → Model optimization and memory cleanup
+- **AIFrameworkError** → Environment restart and validation
+- **CUDAError** → GPU driver validation and restart
 - **DiskSpaceLow** → Log cleanup automation
 - **DatabaseConnectionsFull** → Connection pool restart
-- **GPUTemperatureHigh** → Thermal throttling
 
 ### Warning Alerts (Monitoring)
+- **HighGPUUtilization** → Performance monitoring and optimization
+- **ModelInferenceSlow** → Model performance analysis
 - **HighCPUUsage** → Performance monitoring
 - **HighMemoryUsage** → Memory analysis
 - **HighResponseTime** → Performance optimization
